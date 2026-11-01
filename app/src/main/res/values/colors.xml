@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="brand">#0F7A4D</color>
+    <color name="brand_dark">#0A5C3A</color>
+    <color name="brand_soft">#E6F4EC</color>
+    <color name="ok">#0F7A4D</color>
+    <color name="warn">#B26A00</color>
+    <color name="danger">#B3261E</color>
+    <color name="gate_bg">#0B1F16</color>
+    <color name="text_primary">#1A1C19</color>
+    <color name="text_secondary">#5F665F</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="ic_launcher_background">#0B1F16</color>
+</resources>

@@ -1,0 +1,5 @@
+-keep class com.mazdev.mazguard.service.** { *; }
+-keep class com.mazdev.mazguard.dns.** { *; }
+-keepclassmembers class * extends android.accessibilityservice.AccessibilityService { *; }
+-keepclassmembers class * extends android.app.admin.DeviceAdminReceiver { *; }
+-dontwarn org.jetbrains.annotations.**

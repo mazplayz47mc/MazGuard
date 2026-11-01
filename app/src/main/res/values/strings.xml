@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MazGuard</string>
+    <string name="tagline">Network-level adult content filter</string>
+
+    <string name="status_on">Protection is ON</string>
+    <string name="status_on_detail">Every DNS lookup on this device is filtered. Traffic is not proxied, so speed is unaffected.</string>
+    <string name="status_degraded">Protection is not running</string>
+    <string name="status_degraded_detail">Tap to restore the filter. The watchdog will also retry automatically.</string>
+    <string name="status_off">Protection is OFF</string>
+    <string name="status_off_detail">Complete the four steps below to activate the filter.</string>
+    <string name="activate">Activate protection</string>
+    <string name="open_settings">Open settings</string>
+
+    <string name="stats">%1$d blocked \u00B7 %2$d domains loaded</string>
+    <string name="footnote">Blocklist: %1$d domains \u00B7 updated %2$s</string>
+    <string name="never">never</string>
+
+    <string name="setup_title">Setup checklist</string>
+    <string name="step_pin">Set a PIN</string>
+    <string name="step_vpn">Allow the VPN filter</string>
+    <string name="step_admin">Activate device admin</string>
+    <string name="step_accessibility">Enable the settings guard</string>
+    <string name="done">Done</string>
+    <string name="fix">Fix</string>
+
+    <string name="settings">Settings</string>
+    <string name="blocked_activity">Blocked activity</string>
+
+    <string name="private_dns_warning">Private DNS is enabled in system settings. Turn it off, otherwise apps can bypass the filter.</string>
+
+    <string name="toast_enable_a11y">Enable MazGuard under Settings \u2192 Accessibility</string>
+    <string name="toast_activated">Protection activated</string>
+
+    <string name="channel_protection">Protection status</string>
+    <string name="channel_protection_desc">Ongoing notice that the content filter is active</string>
+    <string name="channel_alerts">Protection alerts</string>
+    <string name="channel_alerts_desc">Warnings when protection stops</string>
+    <string name="notif_title">MazGuard is protecting this device</string>
+    <string name="notif_text">Adult content is blocked</string>
+    <string name="notif_off_title">Protection was turned off</string>
+    <string name="notif_off_text">Tap to restore the content filter.</string>
+
+    <string name="admin_explanation">Device admin stops the filter from being removed without the PIN.</string>
+    <string name="admin_disable_warning">MazGuard protection will stop working if device admin is deactivated.</string>
+    <string name="accessibility_label">MazGuard settings guard</string>
+    <string name="accessibility_description">Prevents the content filter from being disabled without the PIN. MazGuard only watches for its own app-info screen, the uninstall dialog, the device-admin screen, the VPN screen and the Private DNS screen. Nothing is read from other apps.</string>
+
+    <string name="pin_hint">4-12 digits</string>
+    <string name="pin_required">Enter your PIN</string>
+    <string name="pin_required_body">Settings are protected while the filter is active.</string>
+    <string name="settings_subtitle">Changes here are protected by your PIN.</string>
+    <string name="pin_set_title">Create a PIN</string>
+    <string name="pin_set_message">This PIN unlocks settings and protects the filter from being removed. Do not forget it.</string>
+    <string name="pin_invalid">Use 4 to 12 digits</string>
+    <string name="pin_wrong">Incorrect PIN</string>
+    <string name="pin_changed">PIN updated</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="gate_title">Protected</string>
+    <string name="gate_body">Enter your PIN to continue. This screen is blocked so the filter cannot be disabled.</string>
+    <string name="gate_body_settings">This settings screen can disable the filter, so it is locked.</string>
+    <string name="gate_back_hint">Enter your PIN, or press Home to leave.</string>
+    <string name="unlock">Unlock</string>
+    <string name="open_app">Open MazGuard</string>
+
+    <string name="safe_search_title">Force SafeSearch</string>
+    <string name="safe_search_desc">Locks SafeSearch on Google, Bing, DuckDuckGo and Restricted Mode on YouTube.</string>
+    <string name="keywords_title">Keyword filtering</string>
+    <string name="keywords_desc">Also blocks domains whose names look like adult content.</string>
+    <string name="doh_title">Block encrypted-DNS bypass</string>
+    <string name="doh_desc">Black-holes public DoH resolvers so apps cannot skip the filter.</string>
+    <string name="protect_settings_title">Lock Private DNS screen</string>
+    <string name="protect_settings_desc">Requires the PIN before Private DNS can be changed.</string>
+    <string name="protect_vpn_title">Lock VPN screen</string>
+    <string name="protect_vpn_desc">Requires the PIN before the VPN can be disconnected.</string>
+    <string name="autoupdate_title">Weekly blocklist updates</string>
+    <string name="autoupdate_desc">Downloads a fresh public blocklist in the background.</string>
+
+    <string name="section_filtering">Filtering</string>
+    <string name="section_locking">Locking</string>
+    <string name="section_allowlist">Allowlist</string>
+    <string name="section_updates">Blocklist</string>
+    <string name="section_pin">PIN</string>
+    <string name="section_system">System</string>
+
+    <string name="allow_count">%1$d allowed sites</string>
+    <string name="allow_prompt">Allow a site</string>
+    <string name="add_site">Add site</string>
+    <string name="clear">Clear</string>
+    <string name="change_pin">Change PIN</string>
+    <string name="update_list">Update now</string>
+    <string name="list_status">%1$d domains \u00B7 updated %2$s</string>
+    <string name="updating_list">Downloading blocklist\u2026</string>
+    <string name="list_updated">Blocklist updated: %1$d domains</string>
+    <string name="list_update_failed">Update failed. Check your connection and try again.</string>
+    <string name="invalid_domain">Enter a domain like example.com</string>
+    <string name="battery">Allow background running</string>
+    <string name="deactivate_protection">Turn off protection</string>
+    <string name="deactivate_title">Turn off protection?</string>
+    <string name="deactivate_message">The DNS filter, the settings guard and the device admin lock will be removed.</string>
+    <string name="deactivate">Turn off</string>
+    <string name="deactivated">Protection turned off</string>
+    <string name="version_line">MazGuard %1$s</string>
+
+    <string name="log_title">Blocked activity</string>
+    <string name="log_total">%1$d requests blocked in total</string>
+    <string name="log_empty">Nothing blocked yet.</string>
+    <string name="back">Back</string>
+</resources>
