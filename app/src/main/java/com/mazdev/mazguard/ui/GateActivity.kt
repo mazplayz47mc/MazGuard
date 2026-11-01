@@ -61,10 +61,12 @@ class GateActivity : AppCompatActivity() {
     private fun attempt(openApp: Boolean = false) {
         val wait = PinManager.lockRemainingMs(prefs)
         if (wait > 0) {
-            errorView.text = PinUi.errorText(prefs)
+            showError(PinUi.errorText(prefs) ?: getString(R.string.pin_wrong))
             return
         }
         if (prefs.hasPin && PinManager.attempt(prefs, pinField.text.toString())) {
+            GateSession.grant()
+            errorView.visibility = View.INVISIBLE
             if (openApp) {
                 startActivity(
                     Intent(this, MainActivity::class.java)
@@ -74,8 +76,13 @@ class GateActivity : AppCompatActivity() {
             finishAndRemoveTask()
         } else {
             pinField.setText("")
-            errorView.text = PinUi.errorText(prefs) ?: getString(R.string.pin_wrong)
+            showError(PinUi.errorText(prefs) ?: getString(R.string.pin_wrong))
         }
+    }
+
+    private fun showError(message: String) {
+        errorView.text = message
+        errorView.visibility = View.VISIBLE
     }
 
     override fun onBackPressed() {

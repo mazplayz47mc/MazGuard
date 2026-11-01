@@ -4,6 +4,8 @@ A lightweight, network-level adult-content blocker for Android. It filters DNS,
 not traffic — so it adds **no bandwidth cost and no measurable slowdown**, and it
 cannot read, decrypt or log what you browse.
 
+![MazGuard dashboard](docs/dashboard.png)
+
 ## Download
 
 Grab `MazGuard-1.0.0.apk` from the [Releases](../../releases) tab and install it.

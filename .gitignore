@@ -14,3 +14,5 @@ keystore.properties
 .signing/
 *.jks
 *.keystore
+
+dist/

@@ -85,17 +85,23 @@ class SettingsActivity : AppCompatActivity() {
     private fun attemptUnlock() {
         val wait = PinManager.lockRemainingMs(prefs)
         if (wait > 0) {
-            pinError.text = PinUi.errorText(prefs)
+            showPinError(PinUi.errorText(prefs) ?: getString(R.string.pin_wrong))
             return
         }
         val pin = pinField.text.toString()
         if (PinManager.attempt(prefs, pin)) {
             pinField.setText("")
+            pinError.visibility = View.INVISIBLE
             unlock()
         } else {
             pinField.setText("")
-            pinError.text = PinUi.errorText(prefs) ?: getString(R.string.pin_wrong)
+            showPinError(PinUi.errorText(prefs) ?: getString(R.string.pin_wrong))
         }
+    }
+
+    private fun showPinError(message: String) {
+        pinError.text = message
+        pinError.visibility = View.VISIBLE
     }
 
     private fun unlock() {

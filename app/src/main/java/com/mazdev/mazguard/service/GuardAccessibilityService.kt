@@ -9,18 +9,22 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.mazdev.mazguard.core.AppPrefs
 import com.mazdev.mazguard.ui.GateActivity
+import com.mazdev.mazguard.ui.GateSession
 
 /**
  * Watches for the handful of system screens that would let someone disable the
  * protection, and puts a PIN gate in front of them.
  *
- * Only these screens are intercepted; the rest of the system Settings app stays
- * fully usable:
+ * Detection is content-based rather than class-based on purpose: Android 13+ and
+ * 14 moved most Settings pages into `com.android.settings.spa.SpaActivity`, so
+ * matching activity names alone silently fails. We look at what the screen says.
+ *
+ * Only these screens are intercepted; the rest of the Settings app stays usable:
  *  - this app's own "App info" page (force stop / uninstall / clear data)
  *  - the uninstall confirmation dialog for this app
- *  - the device-admin deactivation screen (prevents silent admin removal)
- *  - this app's accessibility toggle page
- *  - the VPN screen and Private DNS screen (both are filter bypasses)
+ *  - the device-admin deactivation screen
+ *  - the VPN screen when our profile is listed
+ *  - the Private DNS screen
  */
 class GuardAccessibilityService : AccessibilityService() {
 
@@ -28,11 +32,7 @@ class GuardAccessibilityService : AccessibilityService() {
     private val prefs: AppPrefs by lazy { AppPrefs.get(this) }
 
     @Volatile private var lastGateAt = 0L
-    @Volatile private var lastEventAt = 0L
-
-    override fun onServiceConnected() {
-        super.onServiceConnected()
-    }
+    @Volatile private var lastEvaluateAt = 0L
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val e = event ?: return
@@ -42,55 +42,69 @@ class GuardAccessibilityService : AccessibilityService() {
         if (!p.guardEnabled || !p.hasPin) return
 
         val pkg = e.packageName?.toString() ?: return
-        val cls = e.className?.toString() ?: ""
+        if (!isWatchedPackage(pkg)) return
 
-        val kind = classify(pkg, cls, p) ?: return
         val now = SystemClock.elapsedRealtime()
-        if (now - lastEventAt < 120) return
-        lastEventAt = now
+        if (now - lastEvaluateAt < 150) return
+        lastEvaluateAt = now
 
-        if (kind == Kind.APP_SPECIFIC) {
-            // The window content is often not fully populated yet; re-check shortly.
-            handler.postDelayed({
-                if (stillRelevant()) {
-                    if (screenMentionsOurApp()) raiseGate()
-                }
-            }, 250)
-        } else {
-            raiseGate()
-        }
+        // Content is usually not populated yet when the window-state event fires.
+        handler.postDelayed({ evaluate(pkg) }, 220)
     }
 
-    private fun classify(pkg: String, cls: String, p: AppPrefs): Kind? {
-        if (pkg == "com.android.settings") {
-            return when {
-                cls.contains("InstalledAppDetails", true) ||
-                    cls.contains("AppInfoDashboard", true) ||
-                    cls.contains("AppDetailsDashboard", true) -> Kind.APP_SPECIFIC
+    private fun isWatchedPackage(pkg: String): Boolean =
+        pkg == "com.android.settings" ||
+            pkg.contains("packageinstaller", true) ||
+            pkg.contains("permissioncontroller", true)
 
-                cls.contains("DeviceAdminAdd", true) -> Kind.APP_SPECIFIC
+    private fun evaluate(pkg: String) {
+        val p = prefs
+        if (!p.guardEnabled || !p.hasPin) return
+        if (GateSession.isGranted()) return
+        if (isProtectedScreen(pkg)) raiseGate()
+    }
 
-                cls.contains("AccessibilityServiceDetails", true) ||
-                    cls.contains("ToggleAccessibilityService", true) -> Kind.APP_SPECIFIC
+    private fun isProtectedScreen(pkg: String): Boolean {
+        val p = prefs
+        val signature = screenSignature()
 
-                cls.contains("PrivateDns", true) -> if (p.protectSettings) Kind.GENERIC else null
+        val mentionsUs = signature.contains(APP_LABEL, true) ||
+            signature.contains(PACKAGE_NAME, true)
 
-                cls.contains("Vpn", true) -> if (p.protectVpnSettings) Kind.GENERIC else null
-
-                else -> null
+        if (mentionsUs) {
+            // App info / force stop / uninstall / clear data.
+            if (signature.contains("force stop", true) ||
+                signature.contains("uninstall", true) ||
+                signature.contains("storage & cache", true) ||
+                signature.contains("clear storage", true) ||
+                signature.contains("clear data", true)
+            ) {
+                return true
+            }
+            // Device admin deactivation.
+            if (signature.contains("deactivate", true) ||
+                signature.contains("remove admin", true)
+            ) {
+                return true
+            }
+            // VPN list containing our profile.
+            if (p.protectVpnSettings && signature.contains("vpn", true)) {
+                return true
             }
         }
 
-        if (pkg.contains("packageinstaller", true) ||
-            pkg.contains("permissioncontroller", true) ||
-            cls.contains("Uninstall", true)
-        ) {
-            return Kind.APP_SPECIFIC
+        // Private DNS is a filtering bypass on its own.
+        if (p.protectSettings && signature.contains("private dns", true)) {
+            return true
         }
-        return null
-    }
 
-    private fun stillRelevant(): Boolean = prefs.guardEnabled && prefs.hasPin
+        // Uninstaller flow can hide the app name behind a generic title.
+        if (pkg.contains("packageinstaller", true) && signature.contains("uninstall", true)) {
+            return true
+        }
+
+        return false
+    }
 
     private fun raiseGate() {
         val now = SystemClock.elapsedRealtime()
@@ -112,42 +126,44 @@ class GuardAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * True when the current window shows this app's name. Used to avoid gating
-     * another app's info page or an unrelated uninstall dialog.
+     * Joins the visible text of the active window, lower-cased. Bounded in size
+     * so this stays cheap on every Settings window change.
      */
-    private fun screenMentionsOurApp(): Boolean {
+    private fun screenSignature(): String {
         val root = try {
             rootInActiveWindow
         } catch (t: Throwable) {
             null
-        } ?: return false
-        return try {
-            walk(root, 0)
+        } ?: return ""
+        val sb = StringBuilder(256)
+        val budget = intArrayOf(80)
+        try {
+            collect(root, 0, sb, budget)
         } catch (t: Throwable) {
-            false
+            // partial signature is fine
         }
+        return sb.toString().lowercase()
     }
 
-    private fun walk(node: AccessibilityNodeInfo?, depth: Int): Boolean {
-        if (node == null || depth > 14) return false
-        val text = node.text?.toString()
-        if (text != null && (text.contains(APP_LABEL, true) || text.contains(PACKAGE_NAME, true))) {
-            return true
-        }
-        val description = node.contentDescription?.toString()
-        if (description != null && description.contains(APP_LABEL, true)) return true
-        val hint = node.hintText?.toString()
-        if (hint != null && hint.contains(APP_LABEL, true)) return true
+    private fun collect(
+        node: AccessibilityNodeInfo?,
+        depth: Int,
+        sb: StringBuilder,
+        budget: IntArray
+    ) {
+        if (node == null || depth > 16 || budget[0] <= 0) return
+        budget[0]--
+
+        node.text?.toString()?.let { if (it.isNotBlank()) sb.append(it).append('|') }
+        node.contentDescription?.toString()?.let { if (it.isNotBlank()) sb.append(it).append('|') }
 
         for (i in 0 until node.childCount) {
-            if (walk(node.getChild(i), depth + 1)) return true
+            if (budget[0] <= 0) return
+            collect(node.getChild(i), depth + 1, sb, budget)
         }
-        return false
     }
 
     override fun onInterrupt() = Unit
-
-    private enum class Kind { APP_SPECIFIC, GENERIC }
 
     companion object {
         private const val APP_LABEL = "MazGuard"
