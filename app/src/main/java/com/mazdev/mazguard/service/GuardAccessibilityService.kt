@@ -81,10 +81,16 @@ class GuardAccessibilityService : AccessibilityService() {
             ) {
                 return true
             }
-            // Device admin deactivation.
+            // Device admin deactivation, and the admin list containing our entry.
             if (signature.contains("deactivate", true) ||
-                signature.contains("remove admin", true)
+                signature.contains("remove admin", true) ||
+                signature.contains("device admin", true)
             ) {
+                return true
+            }
+            // The accessibility toggle is what powers every other gate, so it is
+            // locked with the rest.
+            if (signature.contains("accessibility", true)) {
                 return true
             }
             // VPN list containing our profile.

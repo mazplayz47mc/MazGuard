@@ -25,15 +25,22 @@ object FilterEngine {
     private val KEYWORDS = arrayOf(
         "porn", "porno", "xxx", "xvideos", "xnxx", "xhamster", "pornhub", "redtube",
         "youporn", "spankbang", "beeg", "txxx", "tnaflix", "motherless", "efukt",
-        "hclips", "hqporner", "daftsex", "erome", "hentai", "nhentai", "ehentai",
-        "rule34", "e621", "gelbooru", "danbooru", "sankaku", "fakku", "literotica",
+        "hclips", "hqporner", "daftsex", "erome",
+        // anime / manga porn and its "overflow" family: several of these do NOT
+        // contain the word "hentai" (hanime.tv, doujins.com, hitomi.la, kemono...)
+        "hentai", "nhentai", "ehentai", "imhentai", "hentaiverse",
+        "hanime", "doujin", "ecchi", "kemono", "hitomi", "pururin", "tsumino",
+        "multporn", "ahegao", "hcomic", "8muses", "luscious", "coomer",
+        "rule34", "e621", "e926", "gelbooru", "danbooru", "sankaku", "fakku",
+        "literotica",
         "chaturbate", "bongacams", "stripchat", "livejasmin", "cam4", "myfreecams",
         "camgirl", "sexcam", "sexvid", "xmovies", "tubegalore", "onlyfans", "fansly",
         "nsfw", "milf", "blowjob", "cumshot", "creampie", "bukkake", "gangbang",
-        "incest", "lolicon", "lolita", "jerkoff", "fapping", "nude", "nudes",
+        "incest", "lolicon", "shotacon", "lolita", "jerkoff", "fapping", "nude", "nudes",
         "escort", "brothel", "brazzers", "realitykings", "naughtyamerica", "bangbros",
         "adultfriendfinder", "ashleymadison", "sexting", "webcamsex", "desiporn",
-        "indianporn", "xxxvideo", "sexvideo", "javhd", "javbus", "sukebei"
+        "indianporn", "xxxvideo", "sexvideo", "javhd", "javbus", "javlibrary",
+        "javdoe", "sukebei"
     )
 
     fun reload(context: android.content.Context, prefs: AppPrefs) {
@@ -102,10 +109,20 @@ object FilterEngine {
             val end = host.indexOf('.', start).let { if (it < 0) host.length else it }
             val label = host.substring(start, end)
             if (label.length >= 3) {
-                for (k in KEYWORDS) {
-                    if (label == k) return true
-                    if (k.length >= 4 && label.startsWith(k)) return true
-                    if (k.length >= 6 && label.endsWith(k)) return true
+                // Split on '-' so "watch-hentai-online" yields "hentai" as its
+                // own token instead of failing prefix/suffix tests.
+                var t = 0
+                while (t < label.length) {
+                    val u = label.indexOf('-', t).let { if (it < 0) label.length else it }
+                    val token = label.substring(t, u)
+                    if (token.length >= 3) {
+                        for (k in KEYWORDS) {
+                            if (token == k) return true
+                            if (k.length >= 4 && token.startsWith(k)) return true
+                            if (k.length >= 6 && token.endsWith(k)) return true
+                        }
+                    }
+                    t = u + 1
                 }
             }
             start = end + 1
