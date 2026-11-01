@@ -5,6 +5,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
@@ -21,14 +22,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import com.mazdev.mazguard.BuildConfig
 import com.mazdev.mazguard.R
 import com.mazdev.mazguard.core.AppPrefs
+import com.mazdev.mazguard.core.AppUpdate
+import com.mazdev.mazguard.core.BlockListUpdater
 import com.mazdev.mazguard.core.BlockLog
 import com.mazdev.mazguard.core.FilterEngine
 import com.mazdev.mazguard.service.AdminReceiver
 import com.mazdev.mazguard.service.FilterVpnService
 import com.mazdev.mazguard.service.GuardAccessibilityService
 import com.mazdev.mazguard.service.WatchdogJobService
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,6 +45,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var checklist: LinearLayout
     private lateinit var privateDnsView: TextView
     private lateinit var noteView: TextView
+    private lateinit var updateBanner: TextView
+    private lateinit var updateInstallButton: MaterialButton
+    @Volatile private var pendingUpdate: AppUpdate.Info? = null
 
     private val handler = Handler(Looper.getMainLooper())
     private var waitingForUser = false
@@ -67,12 +75,16 @@ class MainActivity : AppCompatActivity() {
         checklist = findViewById(R.id.checklist)
         privateDnsView = findViewById(R.id.tv_private_dns)
         noteView = findViewById(R.id.tv_note)
+        updateBanner = findViewById(R.id.tv_app_update)
+        updateInstallButton = findViewById(R.id.btn_app_update)
 
         actionButton.setOnClickListener { onAction() }
         findViewById<MaterialButton>(R.id.btn_settings).setOnClickListener { openSettings() }
         findViewById<MaterialButton>(R.id.btn_log).setOnClickListener {
             startActivity(Intent(this, LogActivity::class.java))
         }
+        findViewById<MaterialButton>(R.id.btn_update).setOnClickListener { updateBlocklist() }
+        findViewById<MaterialButton>(R.id.btn_app_update).setOnClickListener { installAppUpdate() }
 
         requestNotificationPermission()
     }
@@ -82,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         refresh()
         handler.removeCallbacks(ticker)
         handler.post(ticker)
+        checkAppUpdate()
 
         if (waitingForUser) {
             handler.postDelayed({
@@ -205,6 +218,76 @@ class MainActivity : AppCompatActivity() {
     private fun updateStats() {
         val blocked = BlockLog.totalCount()
         statsView.text = getString(R.string.stats, blocked, FilterEngine.count)
+    }
+
+    /**
+     * Manual blocklist refresh. Deliberately PIN-free: downloading a fresher
+     * blocklist can only widen blocking, so there is nothing to protect.
+     */
+    private fun updateBlocklist() {
+        Toast.makeText(this, R.string.updating_list, Toast.LENGTH_SHORT).show()
+        kotlin.concurrent.thread(name = "mazguard-list-update") {
+            val result = runCatching { BlockListUpdater.update(this, prefs) }
+            handler.post {
+                if (result.isSuccess) {
+                    Toast.makeText(
+                        this,
+                        getString(R.string.list_updated, result.getOrDefault(0)),
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(this, R.string.list_update_failed, Toast.LENGTH_LONG).show()
+                }
+                refresh()
+            }
+        }
+    }
+
+    /** Runs off-thread; shows the banner only when a newer release exists. */
+    private fun checkAppUpdate() {
+        val current = BuildConfig.VERSION_NAME
+        kotlin.concurrent.thread(name = "mazguard-update-check") {
+            val info = runCatching { AppUpdate.check(current) }.getOrNull()
+            handler.post {
+                pendingUpdate = info
+                if (info != null) {
+                    updateBanner.text = getString(R.string.app_update_available, info.version)
+                    updateBanner.visibility = View.VISIBLE
+                    updateInstallButton.visibility = View.VISIBLE
+                } else {
+                    updateBanner.visibility = View.GONE
+                    updateInstallButton.visibility = View.GONE
+                }
+            }
+        }
+    }
+
+    private fun installAppUpdate() {
+        val info = pendingUpdate ?: return
+        if (!AppUpdate.canInstall(this)) {
+            Toast.makeText(this, R.string.app_update_permission, Toast.LENGTH_LONG).show()
+            runCatching {
+                startActivity(
+                    Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                        .setData(Uri.parse("package:$packageName"))
+                )
+            }
+            return
+        }
+        Toast.makeText(this, R.string.app_update_checking, Toast.LENGTH_SHORT).show()
+        kotlin.concurrent.thread(name = "mazguard-update-dl") {
+            val dest = File(getExternalFilesDir(null) ?: filesDir, "updates/MazGuard-${info.version}.apk")
+            runCatching { dest.parentFile?.mkdirs() }
+            val file = runCatching { AppUpdate.download(info, dest) }.getOrNull()
+            handler.post {
+                if (file == null) {
+                    Toast.makeText(this, R.string.app_update_download_failed, Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this, R.string.app_update_ready, Toast.LENGTH_LONG).show()
+                    runCatching { AppUpdate.install(this, file) }
+                }
+            }
+        }
     }
 
     private fun buildChecklist() {

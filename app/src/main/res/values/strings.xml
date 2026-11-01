@@ -61,6 +61,7 @@
     <string name="gate_title">Protected</string>
     <string name="gate_body">Enter your PIN to continue. This screen is blocked so the filter cannot be disabled.</string>
     <string name="gate_body_settings">This settings screen can disable the filter, so it is locked.</string>
+    <string name="gate_body_browser">This page address contains a blocked keyword, so it is locked.</string>
     <string name="gate_back_hint">Enter your PIN, or press Home to leave.</string>
     <string name="unlock">Unlock</string>
     <string name="open_app">Open MazGuard</string>
@@ -89,6 +90,24 @@
     <string name="allow_prompt">Allow a site</string>
     <string name="add_site">Add site</string>
     <string name="clear">Clear</string>
+
+    <string name="section_keywords">Blocked page keywords</string>
+    <string name="keywords_count">%1$d keywords</string>
+    <string name="add_keyword">Add keyword</string>
+    <string name="keyword_prompt">Pages whose address contains this word are locked (e.g. overflow)</string>
+    <string name="invalid_keyword">Use letters/numbers, at least 3 characters</string>
+    <string name="browser_gate_title">Browser page gate</string>
+    <string name="browser_gate_desc">Locks browser pages whose address contains a blocked keyword (e.g. a hentai title hosted on a general anime site). Reads only the browser address bar; nothing is stored or logged.</string>
+
+    <string name="update_now">Update blocklist</string>
+
+    <string name="app_update_available">App update available: v%1$s</string>
+    <string name="app_update_install">Download &amp; install update</string>
+    <string name="app_update_checking">Checking for app update…</string>
+    <string name="app_update_download_failed">Update download failed. Check your connection.</string>
+    <string name="app_update_ready">Downloaded. Android will ask to install — tap Install.</string>
+    <string name="app_update_permission">Allow MazGuard to install apps from this source, then tap the button again.</string>
+
     <string name="change_pin">Change PIN</string>
     <string name="update_list">Update now</string>
     <string name="list_status">%1$d domains \u00B7 updated %2$s</string>

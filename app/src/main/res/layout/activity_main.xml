@@ -131,6 +131,35 @@
             android:text="@string/blocked_activity"
             app:cornerRadius="14dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_update"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/update_now"
+            app:cornerRadius="14dp" />
+
+        <TextView
+            android:id="@+id/tv_app_update"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="#E4F7E8"
+            android:padding="12dp"
+            android:textColor="#1B5E20"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_app_update"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/app_update_install"
+            android:visibility="gone"
+            app:cornerRadius="14dp" />
+
         <TextView
             android:id="@+id/tv_note"
             android:layout_width="match_parent"

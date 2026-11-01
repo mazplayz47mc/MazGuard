@@ -37,6 +37,7 @@ class SettingsActivity : AppCompatActivity() {
 
     private lateinit var swSafeSearch: SwitchMaterial
     private lateinit var swKeywords: SwitchMaterial
+    private lateinit var swBrowserGate: SwitchMaterial
     private lateinit var swDoh: SwitchMaterial
     private lateinit var swProtectSettings: SwitchMaterial
     private lateinit var swProtectVpn: SwitchMaterial
@@ -64,6 +65,7 @@ class SettingsActivity : AppCompatActivity() {
 
         swSafeSearch = findViewById(R.id.sw_safe_search)
         swKeywords = findViewById(R.id.sw_keywords)
+        swBrowserGate = findViewById(R.id.sw_browser_gate)
         swDoh = findViewById(R.id.sw_doh)
         swProtectSettings = findViewById(R.id.sw_protect_settings)
         swProtectVpn = findViewById(R.id.sw_protect_vpn)
@@ -115,6 +117,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun bindSwitches() {
         swSafeSearch.isChecked = prefs.safeSearch
         swKeywords.isChecked = prefs.keywordFilter
+        swBrowserGate.isChecked = prefs.browserGate
         swDoh.isChecked = prefs.blockDoh
         swProtectSettings.isChecked = prefs.protectSettings
         swProtectVpn.isChecked = prefs.protectVpnSettings
@@ -128,6 +131,10 @@ class SettingsActivity : AppCompatActivity() {
             prefs.keywordFilter = value
             FilterEngine.refreshRules(prefs)
         }
+        swBrowserGate.setOnCheckedChangeListener { _, value ->
+            prefs.browserGate = value
+            FilterEngine.refreshRules(prefs)
+        }
         swDoh.setOnCheckedChangeListener { _, value ->
             prefs.blockDoh = value
             restartTunnel()
@@ -138,6 +145,20 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun bindButtons() {
+        findViewById<Button>(R.id.btn_add_keyword).setOnClickListener {
+            askKeyword { keyword ->
+                prefs.addBlockedKeyword(keyword)
+                FilterEngine.refreshRules(prefs)
+                updateInfo()
+            }
+        }
+
+        findViewById<Button>(R.id.btn_clear_keywords).setOnClickListener {
+            prefs.blockedKeywords = HashSet()
+            FilterEngine.refreshRules(prefs)
+            updateInfo()
+        }
+
         findViewById<Button>(R.id.btn_add_allow).setOnClickListener {
             askDomain(getString(R.string.allow_prompt)) { domain ->
                 prefs.addAllowed(domain)
@@ -158,7 +179,20 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.btn_update_list).setOnClickListener { updateList() }
+        findViewById<Button>(R.id.btn_update_list).setOnClickListener {
+            Toast.makeText(this, R.string.updating_list, Toast.LENGTH_SHORT).show()
+            thread(name = "mazguard-list-update") {
+                val result = runCatching { BlockListUpdater.update(this, prefs) }
+                runOnUiThread {
+                    if (result.isSuccess) {
+                        Toast.makeText(this, getString(R.string.list_updated, result.getOrDefault(0)), Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this, R.string.list_update_failed, Toast.LENGTH_LONG).show()
+                    }
+                    updateInfo()
+                }
+            }
+        }
 
         findViewById<Button>(R.id.btn_battery).setOnClickListener {
             try {
@@ -179,6 +213,9 @@ class SettingsActivity : AppCompatActivity() {
     private fun updateInfo() {
         findViewById<TextView>(R.id.tv_allow).text =
             getString(R.string.allow_count, prefs.allowedDomains.size)
+
+        findViewById<TextView>(R.id.tv_keywords).text =
+            getString(R.string.keywords_count, prefs.blockedKeywords.size)
 
         val updated = if (prefs.listUpdatedAt == 0L) {
             getString(R.string.never)
@@ -212,6 +249,32 @@ class SettingsActivity : AppCompatActivity() {
                     return@setOnClickListener
                 }
                 onDomain(domain)
+                dialog.dismiss()
+            }
+        }
+        dialog.show()
+    }
+
+    private fun askKeyword(onKeyword: (String) -> Unit) {
+        val input = EditText(this).apply {
+            inputType = InputType.TYPE_CLASS_TEXT
+            hint = "overflow"
+            isSingleLine = true
+        }
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.keyword_prompt)
+            .setView(input)
+            .setPositiveButton(R.string.save, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                val kw = input.text.toString().trim().lowercase()
+                if (kw.length < 3 || kw.length > 40 || !kw.all { it.isLetterOrDigit() }) {
+                    input.error = getString(R.string.invalid_keyword)
+                    return@setOnClickListener
+                }
+                onKeyword(kw)
                 dialog.dismiss()
             }
         }

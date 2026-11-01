@@ -45,17 +45,23 @@ class GateActivity : AppCompatActivity() {
             }
         }
 
-        val reason = intent?.getStringExtra(EXTRA_REASON)
-        findViewById<TextView>(R.id.tv_gate_subtitle).text = when (reason) {
-            REASON_SETTINGS -> getString(R.string.gate_body_settings)
-            else -> getString(R.string.gate_body)
-        }
+        applyReason()
         pinField.requestFocus()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        applyReason()
+    }
+
+    private fun applyReason() {
+        val reason = intent?.getStringExtra(EXTRA_REASON)
+        findViewById<TextView>(R.id.tv_gate_subtitle).text = when (reason) {
+            REASON_SETTINGS -> getString(R.string.gate_body_settings)
+            REASON_BROWSER -> getString(R.string.gate_body_browser)
+            else -> getString(R.string.gate_body)
+        }
     }
 
     private fun attempt(openApp: Boolean = false) {
@@ -100,5 +106,6 @@ class GateActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_REASON = "reason"
         const val REASON_SETTINGS = "settings"
+        const val REASON_BROWSER = "browser"
     }
 }

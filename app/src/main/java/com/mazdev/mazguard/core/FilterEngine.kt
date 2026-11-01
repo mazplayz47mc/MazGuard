@@ -13,9 +13,11 @@ object FilterEngine {
     @Volatile private var domains: Set<String> = emptySet()
     @Volatile private var allow: Set<String> = emptySet()
     @Volatile private var extra: Set<String> = emptySet()
+    @Volatile private var siteKeywords: Set<String> = emptySet()
 
     @Volatile var safeSearch: Boolean = true
     @Volatile var keywordFilter: Boolean = true
+    @Volatile var browserGate: Boolean = true
 
     @Volatile private var ready: Boolean = false
     private val readyLatch = java.util.concurrent.CountDownLatch(1)
@@ -40,7 +42,20 @@ object FilterEngine {
         "escort", "brothel", "brazzers", "realitykings", "naughtyamerica", "bangbros",
         "adultfriendfinder", "ashleymadison", "sexting", "webcamsex", "desiporn",
         "indianporn", "xxxvideo", "sexvideo", "javhd", "javbus", "javlibrary",
-        "javdoe", "sukebei"
+        "javdoe", "sukebei",
+        // added in 1.0.3 - more sites, anime-porn family, hookup/cam terms
+        "eporner", "porndoe", "porntrex", "porntube", "pornone", "porn555", "porntn",
+        "pronhub", "hotmovs", "upornia", "thothub", "fapello", "fap", "sex",
+        "tits", "boobs", "pussy", "bigtits", "titties", "handjob", "titfuck",
+        "shemale", "femdom", "fetish", "bdsm", "horny", "yiff",
+        "missav", "thisav", "avmoo", "javfinder", "javfree", "javtiful", "njav",
+        "tvjav", "javguru", "asianporn", "freeomovie", "xtheatre", "xtapes",
+        "gayporn", "boyfriendtv", "thisvid", "camwhores", "camsoda", "jerkmate",
+        "fapturbate", "flirt4free", "imlive", "backpage", "listcrawler", "slixa",
+        "fling",
+        "exhentai", "hentai2read", "hentaihaven", "hentaicloud", "hentaifox",
+        "hentaigasm", "hentaiplay", "myhentai", "tanhentai", "9hentai",
+        "toonporn", "cartoonporn", "porncomics", "jabcomix", "kirtu", "savita"
     )
 
     fun reload(context: android.content.Context, prefs: AppPrefs) {
@@ -74,8 +89,10 @@ object FilterEngine {
     fun refreshRules(prefs: AppPrefs) {
         allow = prefs.allowedDomains
         extra = prefs.blockedDomains
+        siteKeywords = prefs.blockedKeywords.map { it.trim().lowercase() }.filter { it.length >= 3 }.toSet()
         safeSearch = prefs.safeSearch
         keywordFilter = prefs.keywordFilter
+        browserGate = prefs.browserGate
     }
 
     fun isReady(): Boolean = ready
@@ -127,6 +144,70 @@ object FilterEngine {
             }
             start = end + 1
         }
+        return false
+    }
+
+    /**
+     * Browser URL gate: decides whether a URL the screen shows should be
+     * PIN-gated. Matches on token boundaries (URL split on anything that is
+     * not a letter/digit) so the word "overflow" inside "stackoverflow" can
+     * never trigger, but ".../watch/overflow-episode-1" does.
+     *
+     * Two lists are checked:
+     *  - user-added keywords (Settings, e.g. "overflow")
+     *  - a small built-in list of explicit-title terms that appear as URL words
+     */
+    fun urlHit(url: String): Boolean {
+        val clean = url.lowercase().trim()
+        if (clean.isEmpty() || clean.length > 500) return false
+        // Skip pure-domain URLs: those are already handled by the DNS filter.
+        var query = clean
+        val schemeEnd = clean.indexOf("://")
+        if (schemeEnd >= 0) query = clean.substring(schemeEnd + 3)
+        val pathStart = query.indexOf('/')
+        if (pathStart < 0) return false
+        query = query.substring(pathStart)
+
+        var t = 0
+        while (t < query.length) {
+            val ch = query[t]
+            if (ch.isLetterOrDigit()) {
+                var u = t
+                while (u < query.length && query[u].isLetterOrDigit()) u++
+                val token = query.substring(t, u)
+                if (token.length >= 3 && tokenHit(token)) return true
+                t = u
+            } else {
+                t++
+            }
+        }
+        return false
+    }
+
+    private val URL_TERMS = arrayOf("hentai", "nhentai", "ehentai", "doujin", "ecchi", "ahegao", "hanime")
+
+    private fun tokenHit(token: String): Boolean {
+        if (tokenHitUrls(token, siteKeywords)) return true
+        return tokenHitUrls(token, null)
+    }
+
+    private fun tokenHitUrls(token: String, custom: Set<String>?): Boolean {
+        if (custom != null) {
+            for (k in custom) {
+                if (matchesToken(token, k)) return true
+            }
+            return false
+        }
+        for (k in URL_TERMS) {
+            if (matchesToken(token, k)) return true
+        }
+        return false
+    }
+
+    private fun matchesToken(token: String, k: String): Boolean {
+        if (token == k) return true
+        if (k.length >= 5 && token.endsWith(k)) return true
+        if (k.length >= 6 && token.startsWith(k)) return true
         return false
     }
 

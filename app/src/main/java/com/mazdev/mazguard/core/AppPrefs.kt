@@ -82,6 +82,19 @@ class AppPrefs private constructor(private val sp: SharedPreferences) {
         get() = HashSet(sp.getStringSet(K_BLOCKED_EXTRA, emptySet()) ?: emptySet())
         set(value) = sp.edit().putStringSet(K_BLOCKED_EXTRA, value).apply()
 
+    /**
+     * Browser gate: watch the URL bar in browsers and PIN-gate pages whose URL
+     * contains one of the user's blocked keywords or an explicit-title term.
+     */
+    var browserGate: Boolean
+        get() = sp.getBoolean(K_BROWSER_GATE, true)
+        set(value) = sp.edit().putBoolean(K_BROWSER_GATE, value).apply()
+
+    /** Title-keyword list for the browser gate (e.g. "overflow"). */
+    var blockedKeywords: MutableSet<String>
+        get() = HashSet(sp.getStringSet(K_BLOCKED_KEYWORDS, emptySet()) ?: emptySet())
+        set(value) = sp.edit().putStringSet(K_BLOCKED_KEYWORDS, value).apply()
+
     fun addAllowed(domain: String) {
         val set = allowedDomains
         set.add(domain.lowercase())
@@ -106,6 +119,12 @@ class AppPrefs private constructor(private val sp: SharedPreferences) {
         blockedDomains = set
     }
 
+    fun addBlockedKeyword(keyword: String) {
+        val set = blockedKeywords
+        set.add(keyword.lowercase())
+        blockedKeywords = set
+    }
+
     companion object {
         private const val FILE = "mazguard_prefs"
 
@@ -126,6 +145,8 @@ class AppPrefs private constructor(private val sp: SharedPreferences) {
         private const val K_LOCKOUT_UNTIL = "lockout_until"
         private const val K_ALLOWED = "allowed_domains"
         private const val K_BLOCKED_EXTRA = "blocked_domains"
+        private const val K_BROWSER_GATE = "browser_gate"
+        private const val K_BLOCKED_KEYWORDS = "blocked_keywords"
 
         @Volatile
         private var instance: AppPrefs? = null
