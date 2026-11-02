@@ -22,7 +22,7 @@ object AppUpdate {
         "https://api.github.com/repos/mazplayz47mc/MazGuard/releases/latest"
     private const val OWNER_PACKAGE = "com.mazdev.mazguard"
 
-    data class Info(val version: String, val apkUrl: String)
+    data class Info(val version: String, val apkUrl: String, val digest: String?)
 
     /** Latest published release, or null when offline/unchanged/broken. */
     fun check(currentVersion: String): Info? {
@@ -40,7 +40,10 @@ object AppUpdate {
                 body,
                 "\"browser_download_url\"\\s*:\\s*\"([^\"]*MazGuard-[^\"]*\\.apk)\""
             ) ?: return null
-            return Info(latest, apkUrl)
+            // GitHub publishes sha256 digests for release assets. Used as a
+            // second integrity check on top of Android's signature pinning.
+            val digest = regexField(body, "\"digest\"\\s*:\\s*\"sha256:([a-f0-9]{64})\"")
+            return Info(latest, apkUrl, digest)
         } catch (t: Throwable) {
             return null
         } finally {
@@ -48,7 +51,12 @@ object AppUpdate {
         }
     }
 
-    /** Downloads the APK to a cache file. Blocking; call off the main thread. */
+    /**
+     * Downloads the APK to a cache file. Blocking; call off the main thread.
+     * When the release had a sha256 digest, the downloaded file is check-summed
+     * against it; any mismatch deletes the file and returns null instead of
+     * offering a corrupted or swapped APK to the package installer.
+     */
     fun download(info: Info, dest: File): File? {
         return runCatching {
             val conn = URL(info.apkUrl).openConnection() as HttpURLConnection
@@ -62,8 +70,32 @@ object AppUpdate {
             } finally {
                 conn.disconnect()
             }
+            if (!digestMatches(dest, info.digest)) {
+                dest.delete()
+                return null
+            }
             dest
         }.getOrNull()
+    }
+
+    /** True when the release carried no digest, or the file hash matches it. */
+    private fun digestMatches(file: File, digest: String?): Boolean {
+        if (digest.isNullOrBlank()) return true
+        return try {
+            val md = java.security.MessageDigest.getInstance("SHA-256")
+            file.inputStream().use { stream ->
+                val buffer = ByteArray(64 * 1024)
+                while (true) {
+                    val read = stream.read(buffer)
+                    if (read < 0) break
+                    md.update(buffer, 0, read)
+                }
+            }
+            md.digest().joinToString("") { "%02x".format(it) }
+                .equals(digest, ignoreCase = true)
+        } catch (t: Throwable) {
+            false
+        }
     }
 
     /** Launches the system package installer for the downloaded file. */

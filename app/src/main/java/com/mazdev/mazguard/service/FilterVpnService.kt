@@ -121,7 +121,11 @@ class FilterVpnService : VpnService() {
         pool = ThreadPoolExecutor(
             2, 8, 30L, TimeUnit.SECONDS,
             ArrayBlockingQueue<Runnable>(256),
-            ThreadPoolExecutor.DiscardPolicy()
+            // CallerRuns, never Discard: a discarded task answers the client
+            // with nothing (app waits for its own timeout). When the queue is
+            // full the read-loop thread resolves the query itself instead, so
+            // every kernel-captured DNS packet gets an answer or a SERVFAIL.
+            ThreadPoolExecutor.CallerRunsPolicy()
         )
         running = true
         revokeRetries = 0

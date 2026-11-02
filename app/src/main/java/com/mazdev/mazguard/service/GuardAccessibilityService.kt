@@ -258,14 +258,22 @@ class GuardAccessibilityService : AccessibilityService() {
             "com.chrome.dev",
             "org.mozilla.firefox",
             "org.mozilla.firefox_beta",
-            "org.mozilla.fenix",
+            "org.mozilla.fenix",                 // Firefox Nightly
+            "io.github.forkmaintainers.iceraven",// Iceraven (Firefox fork)
+            "org.torproject.torbrowser",
             "org.mozilla.focus",
             "org.mozilla.klar",
-            "com.sec.android.app.sbrowser",   // Samsung Internet
-            "com.microsoft.emmx",             // Edge
+            "com.sec.android.app.sbrowser",      // Samsung Internet
+            "com.sec.android.app.sbrowser.beta", // Samsung Internet Beta
+            "com.microsoft.emmx",                // Edge
+            "com.microsoft.emmx.beta",
+            "com.microsoft.emmx.canary",
             "com.opera.browser",
             "com.opera.mini.native",
+            "com.opera.gx",                      // Opera GX
             "com.brave.browser",
+            "com.brave.browser_beta",
+            "com.kiwibrowser.browser",           // Kiwi (Chromium fork)
             "com.duckduckgo.mobile.android",
             "com.vivaldi.browser",
             "com.yandex.browser",
