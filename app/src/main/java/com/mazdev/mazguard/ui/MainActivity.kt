@@ -31,7 +31,7 @@ import com.mazdev.mazguard.core.BlockLog
 import com.mazdev.mazguard.core.FilterEngine
 import com.mazdev.mazguard.service.AdminReceiver
 import com.mazdev.mazguard.service.FilterVpnService
-import com.mazdev.mazguard.service.GuardAccessibilityService
+import com.mazdev.mazguard.service.GuardHealth
 import com.mazdev.mazguard.service.WatchdogJobService
 import java.io.File
 
@@ -91,6 +91,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Foreground = the one context where GuardHealth may safely restart
+        // an FGS; also clears/posts the accessibility-gate alert as needed.
+        runCatching { GuardHealth.check(this) }
         refresh()
         handler.removeCallbacks(ticker)
         handler.post(ticker)
@@ -365,16 +368,8 @@ class MainActivity : AppCompatActivity() {
         }.getOrDefault(false)
     }
 
-    private fun isAccessibilityEnabled(): Boolean {
-        val component = ComponentName(this, GuardAccessibilityService::class.java)
-        val full = component.flattenToString()
-        val short = component.flattenToShortString()
-        val enabled = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        ) ?: return false
-        return enabled.split(':').any { it.equals(full, true) || it.equals(short, true) }
-    }
+    private fun isAccessibilityEnabled(): Boolean =
+        GuardHealth.accessibilityEnabled(this)
 
     private fun privateDnsEnabled(): Boolean {
         val mode = runCatching {

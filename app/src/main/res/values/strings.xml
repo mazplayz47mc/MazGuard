@@ -40,6 +40,8 @@
     <string name="notif_text">Adult content is blocked</string>
     <string name="notif_off_title">Protection was turned off</string>
     <string name="notif_off_text">Tap to restore the content filter.</string>
+    <string name="alert_gate_title">Screen gate did not come back up</string>
+    <string name="alert_gate_text">After MazGuard updated or restarted, Android did not re-enable the accessibility gate that protects device settings. Tap to open Accessibility settings and switch \"MazGuard settings guard\" back on.</string>
 
     <string name="admin_explanation">Device admin stops the filter from being removed without the PIN.</string>
     <string name="admin_disable_warning">MazGuard protection will stop working if device admin is deactivated.</string>
