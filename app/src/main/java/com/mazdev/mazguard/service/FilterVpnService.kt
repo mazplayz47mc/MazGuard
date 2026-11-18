@@ -129,6 +129,7 @@ class FilterVpnService : VpnService() {
         )
         running = true
         revokeRetries = 0
+        cancelDownNotification()
         val gen = ++generation
 
         worker = Thread({ readLoop(fd, gen) }, "mazguard-dns").apply {
@@ -346,6 +347,7 @@ class FilterVpnService : VpnService() {
     private fun teardown() {
         stopping.set(true)
         running = false
+        cancelDownNotification()
         runCatching { pool?.shutdownNow() }
         pool = null
         runCatching { tunnel?.close() }
@@ -366,14 +368,51 @@ class FilterVpnService : VpnService() {
         super.onRevoke()
     }
 
+    /**
+     * Up to six reconnect attempts with exponential backoff; when all fail,
+     * a persistent DOWN notification stays until a restore succeeds.
+     */
     private fun restoreAfterRevoke() {
-        if (revokeRetries >= 3) return
+        if (revokeRetries >= RETRY_DELAYS.size) {
+            notifyDown()
+            return
+        }
+        val delay = RETRY_DELAYS[revokeRetries]
         revokeRetries++
         Handler(Looper.getMainLooper()).postDelayed({
             if (!running && prefs.guardEnabled) {
                 runCatching { start(applicationContext) }
             }
-        }, 2500L * revokeRetries)
+        }, delay)
+    }
+
+    private fun notifyDown() {
+        val open = PendingIntent.getActivity(
+            this,
+            2,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = NotificationCompat.Builder(this, MazGuardApp.CHANNEL_ALERTS)
+            .setSmallIcon(R.drawable.ic_shield_off)
+            .setContentTitle(getString(R.string.notif_down_title))
+            .setContentText(getString(R.string.notif_down_text))
+            .setCategory(NotificationCompat.CATEGORY_ERROR)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setContentIntent(open)
+            .setAutoCancel(false)
+            .build()
+        runCatching {
+            androidx.core.app.NotificationManagerCompat.from(this).notify(NOTIF_DOWN_ID, notification)
+        }
+    }
+
+    private fun cancelDownNotification() {
+        runCatching {
+            androidx.core.app.NotificationManagerCompat.from(this).cancel(NOTIF_DOWN_ID)
+        }
     }
 
     private fun notifyDisabled() {
@@ -407,6 +446,10 @@ class FilterVpnService : VpnService() {
 
         private const val NOTIF_ID = 1001
         private const val NOTIF_OFF_ID = 1002
+        private const val NOTIF_DOWN_ID = 1003
+
+        // Exponential backoff for onRevoke recovery: 5s, 10s, 20s, 40s, 60s, 60s.
+        private val RETRY_DELAYS = longArrayOf(5000L, 10000L, 20000L, 40000L, 60000L, 60000L)
 
         private const val VPN_ADDRESS = "10.111.222.2"
         private const val VPN_DNS = "10.111.222.1"

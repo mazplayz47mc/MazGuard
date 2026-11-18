@@ -9,6 +9,10 @@
     <string name="status_degraded_detail">Tap to restore the filter. The watchdog will also retry automatically.</string>
     <string name="status_off">Protection is OFF</string>
     <string name="status_off_detail">Complete the four steps below to activate the filter.</string>
+    <string name="status_label">STATUS</string>
+    <string name="status_warn_adb">USB debugging is on and can be used to bypass the filter.</string>
+    <string name="status_warn_private_dns">Private DNS is set and apps may bypass the filter.</string>
+    <string name="status_warn_guard">The settings guard is off; locked screens are not protected.</string>
     <string name="activate">Activate protection</string>
     <string name="open_settings">Open settings</string>
 
@@ -42,6 +46,11 @@
     <string name="notif_off_text">Tap to restore the content filter.</string>
     <string name="alert_gate_title">Screen gate did not come back up</string>
     <string name="alert_gate_text">After MazGuard updated or restarted, Android did not re-enable the accessibility gate that protects device settings. Tap to open Accessibility settings and switch \"MazGuard settings guard\" back on.</string>
+    <string name="alert_adb_title">USB debugging is on</string>
+    <string name="alert_adb_text">USB debugging (developer options) can be used to bypass or remove MazGuard without the PIN. Turn it off in Developer options while protection is active.</string>
+    <string name="alert_private_dns_title">Private DNS is set</string>
+    <string name="notif_down_title">MazGuard filter is DOWN</string>
+    <string name="notif_down_text">Reopen MazGuard to restore filtering.</string>
 
     <string name="admin_explanation">Device admin stops the filter from being removed without the PIN.</string>
     <string name="admin_disable_warning">MazGuard protection will stop working if device admin is deactivated.</string>

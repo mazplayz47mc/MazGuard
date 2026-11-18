@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDF8"
+    android:background="@color/bg"
     android:fillViewport="true">
 
     <LinearLayout
@@ -31,26 +31,37 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            app:cardBackgroundColor="@color/card_bg"
-            app:cardCornerRadius="18dp"
+            android:layout_marginTop="24dp"
+            app:cardBackgroundColor="@color/surface"
+            app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="#1F000000"
+            app:strokeColor="@color/border"
             app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/status_label"
+                    android:textAllCaps="true"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
                     android:text="@string/status_off"
                     android:textColor="@color/danger"
-                    android:textSize="21sp"
+                    android:textSize="22sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -67,7 +78,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:textColor="@color/brand"
+                    android:textColor="@color/brand_bright"
                     android:textSize="13sp"
                     android:textStyle="bold" />
 
@@ -78,26 +89,29 @@
                     android:layout_marginTop="16dp"
                     android:text="@string/activate"
                     android:textSize="15sp"
-                    app:cornerRadius="14dp" />
+                    app:cornerRadius="28dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:id="@+id/tv_private_dns"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="#FFF1D6"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_banner_warn"
+            android:drawablePadding="10dp"
+            android:drawableTint="@color/warn_bright"
+            android:drawableStart="@drawable/ic_shield_off"
             android:padding="12dp"
             android:text="@string/private_dns_warning"
-            android:textColor="#7A5200"
+            android:textColor="@color/warn_bright"
             android:textSize="12sp"
-            android:visibility="gone"
-            android:id="@+id/tv_private_dns" />
+            android:visibility="gone" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="24dp"
             android:text="@string/setup_title"
             android:textColor="@color/text_primary"
             android:textSize="16sp"
@@ -108,63 +122,61 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:divider="#14000000"
+            android:divider="@color/border"
             android:dividerHeight="1dp"
             android:orientation="vertical"
             android:showDividers="middle" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_settings"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MazGuard.Outlined"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="20dp"
-            android:text="@string/settings"
-            app:cornerRadius="14dp" />
+            android:layout_height="48dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/settings" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_log"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MazGuard.Outlined"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="48dp"
             android:layout_marginTop="10dp"
-            android:text="@string/blocked_activity"
-            app:cornerRadius="14dp" />
+            android:text="@string/blocked_activity" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_update"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MazGuard.Outlined"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="48dp"
             android:layout_marginTop="10dp"
-            android:text="@string/update_now"
-            app:cornerRadius="14dp" />
+            android:text="@string/update_now" />
 
         <TextView
             android:id="@+id/tv_app_update"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:background="#E4F7E8"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_banner_brand"
             android:padding="12dp"
-            android:textColor="#1B5E20"
+            android:textColor="@color/brand_bright"
             android:textSize="13sp"
             android:visibility="gone" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_app_update"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="48dp"
             android:layout_marginTop="10dp"
             android:text="@string/app_update_install"
+            android:textSize="15sp"
             android:visibility="gone"
-            app:cornerRadius="14dp" />
+            app:cornerRadius="28dp" />
 
         <TextView
             android:id="@+id/tv_note"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="24dp"
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
     </LinearLayout>

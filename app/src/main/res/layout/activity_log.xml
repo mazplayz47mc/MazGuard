@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDF8"
+    android:background="@color/bg"
     android:orientation="vertical"
     android:padding="20dp">
 
@@ -19,6 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
+        android:fontFamily="monospace"
         android:textColor="@color/text_secondary"
         android:textSize="12sp" />
 
@@ -47,7 +48,7 @@
                 android:id="@+id/log_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:divider="#14000000"
+                android:divider="@color/border"
                 android:dividerHeight="1dp"
                 android:orientation="vertical"
                 android:showDividers="middle" />
@@ -70,7 +71,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_back"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.MazGuard.Outlined"
             android:layout_width="0dp"
             android:layout_height="46dp"
             android:layout_marginStart="8dp"

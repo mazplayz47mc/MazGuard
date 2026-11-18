@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.InputType
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
@@ -81,6 +82,11 @@ class SettingsActivity : AppCompatActivity() {
     private fun showLock() {
         lockContainer.visibility = View.VISIBLE
         contentContainer.visibility = View.GONE
+        // Keep the PIN entry out of screenshots and the recents thumbnail.
+        window.setFlags(
+            WindowManager.LayoutParams.FLAG_SECURE,
+            WindowManager.LayoutParams.FLAG_SECURE
+        )
         pinField.requestFocus()
     }
 
@@ -109,6 +115,7 @@ class SettingsActivity : AppCompatActivity() {
     private fun unlock() {
         lockContainer.visibility = View.GONE
         contentContainer.visibility = View.VISIBLE
+        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         bindSwitches()
         bindButtons()
         updateInfo()

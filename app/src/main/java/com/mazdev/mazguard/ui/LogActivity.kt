@@ -42,6 +42,7 @@ class LogActivity : AppCompatActivity() {
             val host = TextView(this).apply {
                 text = entry.host
                 textSize = 14f
+                setTextColor(getColor(R.color.text_primary))
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             }
             val time = TextView(this).apply {

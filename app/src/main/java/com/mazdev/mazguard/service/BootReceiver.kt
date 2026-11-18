@@ -18,5 +18,8 @@ class BootReceiver : BroadcastReceiver() {
         runCatching { FilterVpnService.start(context) }
         runCatching { WatchdogJobService.schedule(context) }
         runCatching { WatchdogJobService.scheduleHealthCheck(context) }
+        // Immediate pass so bypass alerts (ADB / Private DNS / gate) do not
+        // wait for the one-off health check job to be scheduled and run.
+        runCatching { GuardHealth.check(context) }
     }
 }

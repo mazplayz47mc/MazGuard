@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFDF8">
+    android:background="@color/bg">
 
     <include
         android:id="@+id/lock_container"
@@ -181,7 +181,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_add_keyword"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.MazGuard.Outlined"
                     android:layout_width="0dp"
                     android:layout_height="46dp"
                     android:layout_weight="1"
@@ -218,7 +218,7 @@
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_add_allow"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    style="@style/Widget.MazGuard.Outlined"
                     android:layout_width="0dp"
                     android:layout_height="46dp"
                     android:layout_weight="1"
@@ -267,7 +267,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_update_list"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MazGuard.Outlined"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:layout_marginTop="8dp"
@@ -281,7 +281,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_change_pin"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MazGuard.Outlined"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:text="@string/change_pin" />
@@ -294,7 +294,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_battery"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                style="@style/Widget.MazGuard.Outlined"
                 android:layout_width="match_parent"
                 android:layout_height="46dp"
                 android:text="@string/battery" />

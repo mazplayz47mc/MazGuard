@@ -190,16 +190,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun refresh() {
         val active = isActive()
-        val running = FilterVpnService.running
+        val adbOn = GuardHealth.adbEnabled(this)
+        val privateDnsOn = GuardHealth.privateDnsBypassing(this)
+        val guardDown = prefs.hasPin && !isAccessibilityEnabled()
 
-        if (active) {
+        if (active && !adbOn && !privateDnsOn && !guardDown) {
             statusView.setText(R.string.status_on)
             statusView.setTextColor(ContextCompat.getColor(this, R.color.ok))
             statusDetailView.setText(R.string.status_on_detail)
-        } else if (prefs.guardEnabled && !running) {
-            statusView.setText(R.string.status_degraded)
+        } else if (prefs.guardEnabled) {
+            statusView.setText(if (active) R.string.status_on else R.string.status_degraded)
             statusView.setTextColor(ContextCompat.getColor(this, R.color.warn))
-            statusDetailView.setText(R.string.status_degraded_detail)
+            statusDetailView.setText(
+                when {
+                    adbOn -> R.string.status_warn_adb
+                    privateDnsOn -> R.string.status_warn_private_dns
+                    guardDown -> R.string.status_warn_guard
+                    else -> if (active) R.string.status_on_detail else R.string.status_degraded_detail
+                }
+            )
         } else {
             statusView.setText(R.string.status_off)
             statusView.setTextColor(ContextCompat.getColor(this, R.color.danger))
@@ -210,7 +219,7 @@ class MainActivity : AppCompatActivity() {
         updateStats()
         buildChecklist()
 
-        privateDnsView.visibility = if (privateDnsEnabled()) View.VISIBLE else View.GONE
+        privateDnsView.visibility = if (privateDnsOn) View.VISIBLE else View.GONE
         noteView.text = getString(
             R.string.footnote,
             prefs.listCount,
@@ -317,7 +326,12 @@ class MainActivity : AppCompatActivity() {
         val mark = TextView(this).apply {
             text = if (done) "\u2713" else "\u25CB"
             textSize = 17f
-            setTextColor(ContextCompat.getColor(this@MainActivity, if (done) R.color.ok else R.color.warn))
+            setTextColor(
+                ContextCompat.getColor(
+                    this@MainActivity,
+                    if (done) R.color.brand_bright else R.color.text_secondary
+                )
+            )
             setPadding(0, 0, PinUi.dp(this@MainActivity, 12), 0)
         }
         val label = TextView(this).apply {
@@ -329,7 +343,7 @@ class MainActivity : AppCompatActivity() {
         val state = TextView(this).apply {
             text = if (done) getString(R.string.done) else getString(R.string.fix)
             textSize = 13f
-            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.brand))
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.brand_bright))
         }
         row.addView(mark)
         row.addView(label)
@@ -370,13 +384,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun isAccessibilityEnabled(): Boolean =
         GuardHealth.accessibilityEnabled(this)
-
-    private fun privateDnsEnabled(): Boolean {
-        val mode = runCatching {
-            Settings.Global.getString(contentResolver, "private_dns_mode")
-        }.getOrNull() ?: "off"
-        return mode != "off"
-    }
 
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
