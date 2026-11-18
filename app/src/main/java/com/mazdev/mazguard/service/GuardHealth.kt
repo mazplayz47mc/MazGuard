@@ -117,14 +117,16 @@ object GuardHealth {
     }.getOrDefault(false)
 
     /**
-     * True when Private DNS is set to a mode that can bypass the filter.
-     * An unreadable setting counts as unknown, i.e. no alarm.
+     * True when Private DNS is set to an explicit DoT hostname, which can
+     * bypass the filter. "opportunistic" is Android's stock default and
+     * never resolved by name, so it is not flagged. An unreadable setting
+     * counts as unknown, i.e. no alarm.
      */
     fun privateDnsBypassing(context: Context): Boolean {
         val mode = runCatching {
             Settings.Global.getString(context.contentResolver, "private_dns_mode")
         }.getOrNull()
-        return !mode.isNullOrEmpty() && mode != "off"
+        return mode == "hostname"
     }
 
     private fun postAlert(
