@@ -10,13 +10,14 @@ import android.text.InputType
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.textfield.TextInputEditText
 import com.mazdev.mazguard.BuildConfig
 import com.mazdev.mazguard.R
 import com.mazdev.mazguard.core.AppPrefs
@@ -33,7 +34,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var prefs: AppPrefs
     private lateinit var lockContainer: View
     private lateinit var contentContainer: View
-    private lateinit var pinField: EditText
+    private lateinit var pinField: TextInputEditText
     private lateinit var pinError: TextView
 
     private lateinit var swSafeSearch: SwitchMaterial
@@ -54,7 +55,7 @@ class SettingsActivity : AppCompatActivity() {
         pinField = findViewById(R.id.et_pin)
         pinError = findViewById(R.id.tv_pin_error)
 
-        findViewById<Button>(R.id.btn_unlock).setOnClickListener { attemptUnlock() }
+        findViewById<MaterialButton>(R.id.btn_unlock).setOnClickListener { attemptUnlock() }
         pinField.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 attemptUnlock()
@@ -152,7 +153,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun bindButtons() {
-        findViewById<Button>(R.id.btn_add_keyword).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btn_add_keyword).setOnClickListener {
             askKeyword { keyword ->
                 prefs.addBlockedKeyword(keyword)
                 FilterEngine.refreshRules(prefs)
@@ -160,13 +161,13 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.btn_clear_keywords).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btn_clear_keywords).setOnClickListener {
             prefs.blockedKeywords = HashSet()
             FilterEngine.refreshRules(prefs)
             updateInfo()
         }
 
-        findViewById<Button>(R.id.btn_add_allow).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btn_add_allow).setOnClickListener {
             askDomain(getString(R.string.allow_prompt)) { domain ->
                 prefs.addAllowed(domain)
                 FilterEngine.refreshRules(prefs)
@@ -174,34 +175,34 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.btn_clear_allow).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btn_clear_allow).setOnClickListener {
             prefs.allowedDomains = HashSet()
             FilterEngine.refreshRules(prefs)
             updateInfo()
         }
 
-        findViewById<Button>(R.id.btn_change_pin).setOnClickListener {
-            PinUi.askNewPin(this) {
+        findViewById<MaterialButton>(R.id.btn_change_pin).setOnClickListener {
+            PinUi.askChangePin(this) {
                 Toast.makeText(this, R.string.pin_changed, Toast.LENGTH_SHORT).show()
             }
         }
 
-        findViewById<Button>(R.id.btn_update_list).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btn_update_list).setOnClickListener {
             Toast.makeText(this, R.string.updating_list, Toast.LENGTH_SHORT).show()
             thread(name = "mazguard-list-update") {
-                val result = runCatching { BlockListUpdater.update(this, prefs) }
+                val result = runCatching { BlockListUpdater.update(this@SettingsActivity, prefs) }
                 runOnUiThread {
                     if (result.isSuccess) {
-                        Toast.makeText(this, getString(R.string.list_updated, result.getOrDefault(0)), Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@SettingsActivity, getString(R.string.list_updated, result.getOrDefault(0)), Toast.LENGTH_LONG).show()
                     } else {
-                        Toast.makeText(this, R.string.list_update_failed, Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@SettingsActivity, R.string.list_update_failed, Toast.LENGTH_LONG).show()
                     }
                     updateInfo()
                 }
             }
         }
 
-        findViewById<Button>(R.id.btn_battery).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btn_battery).setOnClickListener {
             try {
                 startActivity(
                     Intent(
@@ -214,7 +215,7 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.btn_deactivate).setOnClickListener { confirmDeactivate() }
+        findViewById<MaterialButton>(R.id.btn_deactivate).setOnClickListener { confirmDeactivate() }
     }
 
     private fun updateInfo() {

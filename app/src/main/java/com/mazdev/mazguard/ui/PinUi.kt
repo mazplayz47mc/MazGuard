@@ -23,10 +23,46 @@ object PinUi {
         setPadding(dp(activity, 18), dp(activity, 14), dp(activity, 18), dp(activity, 14))
     }
 
-    /** Asks for a new PIN, stores it, then runs [onDone]. */
-    fun askNewPin(activity: Activity, onDone: () -> Unit) {
+    /**
+     * Changes the PIN, but only after the current one is verified. Without
+     * this anyone holding the phone could tap the dashboard's "Set a PIN"
+     * row and reset a forgotten PIN, which would make the gate decorative.
+     */
+    fun askChangePin(activity: Activity, onDone: () -> Unit) {
+        val prefs = AppPrefs.get(activity)
+        if (!prefs.hasPin) {
+            askNewPin(activity, onDone)
+            return
+        }
         val input = pinField(activity)
-        val container = FrameLayout(activity).apply {
+        val dialog = MaterialAlertDialogBuilder(activity)
+            .setTitle(R.string.pin_required)
+            .setMessage(R.string.pin_required_body)
+            .setView(box(activity, input))
+            .setPositiveButton(R.string.unlock, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+                if (PinManager.lockRemainingMs(prefs) > 0) {
+                    input.error = errorText(prefs) ?: activity.getString(R.string.pin_wrong)
+                    return@setOnClickListener
+                }
+                if (!PinManager.attempt(prefs, input.text.toString())) {
+                    input.setText("")
+                    input.error = errorText(prefs) ?: activity.getString(R.string.pin_wrong)
+                    return@setOnClickListener
+                }
+                dialog.dismiss()
+                askNewPin(activity, onDone)
+            }
+        }
+        dialog.show()
+    }
+
+    private fun box(activity: Activity, input: EditText): FrameLayout =
+        FrameLayout(activity).apply {
             setPadding(dp(activity, 12), dp(activity, 4), dp(activity, 12), 0)
             addView(
                 input,
@@ -36,6 +72,11 @@ object PinUi {
                 )
             )
         }
+
+    /** Asks for a new PIN, stores it, then runs [onDone]. */
+    fun askNewPin(activity: Activity, onDone: () -> Unit) {
+        val input = pinField(activity)
+        val container = box(activity, input)
         val dialog = MaterialAlertDialogBuilder(activity)
             .setTitle(R.string.pin_set_title)
             .setMessage(R.string.pin_set_message)

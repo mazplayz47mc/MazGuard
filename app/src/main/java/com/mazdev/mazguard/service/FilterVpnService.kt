@@ -119,14 +119,14 @@ class FilterVpnService : VpnService() {
             upstreamProvider = { upstreamServers() }
         )
         pool = ThreadPoolExecutor(
-            2, 8, 30L, TimeUnit.SECONDS,
-            ArrayBlockingQueue<Runnable>(256),
+            4, 8, 60L, TimeUnit.SECONDS,
+            ArrayBlockingQueue<Runnable>(512),
             // CallerRuns, never Discard: a discarded task answers the client
             // with nothing (app waits for its own timeout). When the queue is
             // full the read-loop thread resolves the query itself instead, so
             // every kernel-captured DNS packet gets an answer or a SERVFAIL.
             ThreadPoolExecutor.CallerRunsPolicy()
-        )
+        ).also { it.prestartAllCoreThreads() }
         running = true
         revokeRetries = 0
         cancelDownNotification()
@@ -136,6 +136,8 @@ class FilterVpnService : VpnService() {
             isDaemon = true
             start()
         }
+        // BlockPageServer disabled: requires root to bind to port 80/443
+        // blockPageServer = BlockPageServer(this).also { it.start() }
     }
 
     private fun establishTunnel(includeIpv6: Boolean): ParcelFileDescriptor? {
@@ -199,16 +201,18 @@ class FilterVpnService : VpnService() {
         val input = try {
             FileInputStream(fd.fileDescriptor)
         } catch (t: Throwable) {
-            if (gen == generation) running = false
+            if (gen == generation) {
+                running = false
+                teardown()
+            }
             return
         }
-        // Fail closed: do not answer anything until the blocklist is loaded.
-        FilterEngine.awaitReady(8000)
         val buffer = ByteArray(65535)
         while (!stopping.get()) {
             val length = try {
                 input.read(buffer)
             } catch (t: Throwable) {
+                android.util.Log.w("MazGuard", "dns reader stopped", t)
                 break
             }
             if (length < 0) break
@@ -219,7 +223,14 @@ class FilterVpnService : VpnService() {
                 // Never let one malformed packet kill the tunnel.
             }
         }
-        if (gen == generation) running = false
+        if (gen == generation) {
+            running = false
+            // A tunnel with no reader still swallows every app's DNS, so the
+            // phone goes blind for six seconds per lookup. Close it, then
+            // rebuild through the same retry ladder a revoke uses.
+            teardown()
+            if (prefs.guardEnabled) restoreAfterRevoke()
+        }
     }
 
     private fun handlePacket(buf: ByteArray, length: Int) {
@@ -248,6 +259,16 @@ class FilterVpnService : VpnService() {
         val sourceAddress = buf.copyOfRange(12, 16)
 
         val host = question.name
+        if (!FilterEngine.isReady()) {
+            // Rules are still loading. Answer SERVFAIL straight away instead
+            // of stalling: the app retries in milliseconds, and no real IP is
+            // ever returned while the blocklist is unknown (fail closed).
+            send(
+                DnsCodec.buildEmpty(query, question.endOffset, 2),
+                sourceAddress, clientIp, sourcePort, 53
+            )
+            return
+        }
         if (host.isNotEmpty() && FilterEngine.isBlocked(host)) {
             BlockLog.record(host)
             val reply = if (question.type == DnsCodec.TYPE_A) {
@@ -355,6 +376,8 @@ class FilterVpnService : VpnService() {
         runCatching { output?.close() }
         output = null
         proxy = null
+        // blockPageServer?.stop()
+        // blockPageServer = null
         BlockLog.flush()
     }
 

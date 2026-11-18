@@ -1,26 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark Shield palette -->
-    <color name="bg">#0A1210</color>
-    <color name="surface">#101B17</color>
-    <color name="surface_raised">#16241F</color>
-    <color name="border">#22352E</color>
+    <!-- Hisn — deep night green with warm gold accent -->
+    <color name="bg">#050F0B</color>
+    <color name="bg_elevated">#0A1A13</color>
+    <color name="surface">#0D1F15</color>
+    <color name="surface_raised">#122A1E</color>
+    <color name="border">#1E3A2E</color>
+    <color name="border_focus">#2FBF71</color>
     <color name="ink">#E8EFEB</color>
     <color name="ink_muted">#8FA39B</color>
-    <color name="brand_bright">#2FBF71</color>
-    <color name="danger_bright">#FF7A6E</color>
-    <color name="warn_bright">#F5C66F</color>
-
-    <!-- Legacy tokens referenced by existing code, remapped to the palette -->
-    <color name="brand">#0F7A4D</color>
-    <color name="brand_dark">#0A5C3A</color>
-    <color name="brand_soft">#14261F</color>
-    <color name="ok">#2FBF71</color>
+    <color name="ink_subtle">#5A6E65</color>
+    <color name="brand">#2FBF71</color>
+    <color name="brand_dim">#1F2FBF71</color>
+    <color name="brand_press">#1FA05A</color>
+    <color name="gold">#E8CC7A</color>
+    <color name="gold_dim">#1AE8CC7A</color>
     <color name="warn">#F5C66F</color>
     <color name="danger">#FF7A6E</color>
-    <color name="gate_bg">#101B17</color>
+    <color name="danger_dim">#1AFF7A6E</color>
+    <color name="ok">#2FBF71</color>
+    <color name="gate_bg">#050F0B</color>
     <color name="text_primary">#E8EFEB</color>
     <color name="text_secondary">#8FA39B</color>
-    <color name="card_bg">#101B17</color>
-    <color name="ic_launcher_background">#0B1F16</color>
+    <color name="card_bg">#0D1F15</color>
+    <color name="ic_launcher_background">#050F0B</color>
+
+    <!-- Semantic aliases for existing code -->
+    <color name="brand_dark">#1FA05A</color>
+    <color name="brand_soft">#0E2D1C</color>
 </resources>

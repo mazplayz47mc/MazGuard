@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MazGuard</string>
-    <string name="tagline">Network-level adult content filter</string>
+    <string name="app_name">Hisn</string>
+    <string name="tagline">Guard your gaze. Protect your heart.</string>
 
     <string name="status_on">Protection is ON</string>
     <string name="status_on_detail">Every DNS lookup on this device is filtered. Traffic is not proxied, so speed is unaffected.</string>
@@ -33,29 +33,29 @@
 
     <string name="private_dns_warning">Private DNS is enabled in system settings. Turn it off, otherwise apps can bypass the filter.</string>
 
-    <string name="toast_enable_a11y">Enable MazGuard under Settings \u2192 Accessibility</string>
+    <string name="toast_enable_a11y">Enable Hisn under Settings \u2192 Accessibility</string>
     <string name="toast_activated">Protection activated</string>
 
     <string name="channel_protection">Protection status</string>
     <string name="channel_protection_desc">Ongoing notice that the content filter is active</string>
     <string name="channel_alerts">Protection alerts</string>
     <string name="channel_alerts_desc">Warnings when protection stops</string>
-    <string name="notif_title">MazGuard is protecting this device</string>
+    <string name="notif_title">Hisn is protecting this device</string>
     <string name="notif_text">Adult content is blocked</string>
     <string name="notif_off_title">Protection was turned off</string>
     <string name="notif_off_text">Tap to restore the content filter.</string>
     <string name="alert_gate_title">Screen gate did not come back up</string>
-    <string name="alert_gate_text">After MazGuard updated or restarted, Android did not re-enable the accessibility gate that protects device settings. Tap to open Accessibility settings and switch \"MazGuard settings guard\" back on.</string>
+    <string name="alert_gate_text">After Hisn updated or restarted, Android did not re-enable the accessibility gate that protects device settings. Tap to open Accessibility settings and switch \"Hisn settings guard\" back on.</string>
     <string name="alert_adb_title">USB debugging is on</string>
-    <string name="alert_adb_text">USB debugging (developer options) can be used to bypass or remove MazGuard without the PIN. Turn it off in Developer options while protection is active.</string>
+    <string name="alert_adb_text">USB debugging (developer options) can be used to bypass or remove Hisn without the PIN. Turn it off in Developer options while protection is active.</string>
     <string name="alert_private_dns_title">Private DNS is set</string>
-    <string name="notif_down_title">MazGuard filter is DOWN</string>
-    <string name="notif_down_text">Reopen MazGuard to restore filtering.</string>
+    <string name="notif_down_title">Hisn filter is DOWN</string>
+    <string name="notif_down_text">Reopen Hisn to restore filtering.</string>
 
     <string name="admin_explanation">Device admin stops the filter from being removed without the PIN.</string>
-    <string name="admin_disable_warning">MazGuard protection will stop working if device admin is deactivated.</string>
-    <string name="accessibility_label">MazGuard settings guard</string>
-    <string name="accessibility_description">Prevents the content filter from being disabled without the PIN. MazGuard only watches for its own app-info screen, the uninstall dialog, the device-admin screen, the VPN screen and the Private DNS screen. Nothing is read from other apps.</string>
+    <string name="admin_disable_warning">Hisn protection will stop working if device admin is deactivated.</string>
+    <string name="accessibility_label">Hisn settings guard</string>
+    <string name="accessibility_description">Prevents the content filter from being disabled without the PIN. Hisn only watches for its own app-info screen, the uninstall dialog, the device-admin screen, the VPN screen and the Private DNS screen. Nothing is read from other apps.</string>
 
     <string name="pin_hint">4-12 digits</string>
     <string name="pin_required">Enter your PIN</string>
@@ -75,7 +75,7 @@
     <string name="gate_body_browser">This page address contains a blocked keyword, so it is locked.</string>
     <string name="gate_back_hint">Enter your PIN, or press Home to leave.</string>
     <string name="unlock">Unlock</string>
-    <string name="open_app">Open MazGuard</string>
+    <string name="open_app">Open Hisn</string>
 
     <string name="safe_search_title">Force SafeSearch</string>
     <string name="safe_search_desc">Locks SafeSearch on Google, Bing, DuckDuckGo and Restricted Mode on YouTube.</string>
@@ -117,7 +117,7 @@
     <string name="app_update_checking">Checking for app update…</string>
     <string name="app_update_download_failed">Update download failed. Check your connection.</string>
     <string name="app_update_ready">Downloaded. Android will ask to install — tap Install.</string>
-    <string name="app_update_permission">Allow MazGuard to install apps from this source, then tap the button again.</string>
+    <string name="app_update_permission">Allow Hisn to install apps from this source, then tap the button again.</string>
 
     <string name="change_pin">Change PIN</string>
     <string name="update_list">Update now</string>
@@ -132,10 +132,32 @@
     <string name="deactivate_message">The DNS filter, the settings guard and the device admin lock will be removed.</string>
     <string name="deactivate">Turn off</string>
     <string name="deactivated">Protection turned off</string>
-    <string name="version_line">MazGuard %1$s</string>
+    <string name="version_line">Hisn %1$s</string>
 
     <string name="log_title">Blocked activity</string>
     <string name="log_total">%1$d requests blocked in total</string>
     <string name="log_empty">Nothing blocked yet.</string>
     <string name="back">Back</string>
+
+    <!-- Rotating reminders. Quran text follows the Uthmani spelling; hadith
+         wording and references are from the two most authentic collections. -->
+    <string name="quote_1_ar">قُل لِّلْمُؤْمِنِينَ يَغُضُّوا مِنْ أَبْصَارِهِمْ وَيَحْفَظُوا فُرُوجَهُمْ ۚ ذَٰلِكَ أَزْكَىٰ لَهُمْ</string>
+    <string name="quote_1_en">Tell the believing men to lower their gaze and guard their chastity. That is purer for them.</string>
+    <string name="quote_1_src">Quran 24:30 · An-Nur</string>
+
+    <string name="quote_2_ar">إِنَّ الصَّلَاةَ تَنْهَىٰ عَنِ الْفَحْشَاءِ وَالْمُنكَرِ</string>
+    <string name="quote_2_en">Indeed, prayer restrains from immorality and wrongdoing.</string>
+    <string name="quote_2_src">Quran 29:45 · Al-Ankabut</string>
+
+    <string name="quote_3_ar">وَمَن يَتَّقِ اللَّهَ يَجْعَل لَّهُ مَخْرَجًا</string>
+    <string name="quote_3_en">And whoever is mindful of Allah, He will make a way out for him.</string>
+    <string name="quote_3_src">Quran 65:2 · At-Talaq</string>
+
+    <string name="quote_4_ar">الْعَيْنَانِ تَزْنِيَانِ وَزِنَاهُمَا النَّظَرُ</string>
+    <string name="quote_4_en">The eyes commit zina, and their zina is the gaze.</string>
+    <string name="quote_4_src">Hadith · Bukhari 6612 · Muslim 2657</string>
+
+    <string name="quote_5_ar">الْحَيَاءُ شُعْبَةٌ مِنَ الْإِيمَانِ</string>
+    <string name="quote_5_en">Modesty is a branch of faith.</string>
+    <string name="quote_5_src">Hadith · Bukhari 9 · Muslim 35</string>
 </resources>

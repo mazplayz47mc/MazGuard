@@ -15,16 +15,17 @@
         android:contentDescription="@string/gate_title"
         android:padding="20dp"
         android:src="@drawable/ic_shield"
-        android:tint="@color/brand_bright" />
+        android:tint="@color/brand" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/pin_required"
-        android:textColor="@color/text_primary"
-        android:textSize="22sp"
-        android:textStyle="bold" />
+        android:textColor="@color/ink"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.02" />
 
     <TextView
         android:layout_width="match_parent"
@@ -32,26 +33,39 @@
         android:layout_marginTop="6dp"
         android:gravity="center"
         android:text="@string/pin_required_body"
-        android:textColor="@color/text_secondary"
+        android:textColor="@color/ink_muted"
         android:textSize="13sp" />
 
-    <EditText
-        android:id="@+id/et_pin"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_pin"
+        style="@style/Widget.Hisn.TextInputLayout"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="22dp"
-        android:background="@drawable/bg_pin"
-        android:gravity="center"
-        android:hint="@string/pin_hint"
-        android:imeOptions="actionDone"
-        android:inputType="numberPassword"
-        android:letterSpacing="0.3"
-        android:maxLength="12"
-        android:paddingStart="18dp"
-        android:paddingEnd="18dp"
-        android:textColor="@color/text_primary"
-        android:textColorHint="@color/text_secondary"
-        android:textSize="20sp" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginHorizontal="4dp"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:hintEnabled="false"
+        app:errorEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_pin"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:hint="@string/pin_hint"
+            android:imeOptions="actionDone"
+            android:inputType="numberPassword"
+            android:letterSpacing="0.4"
+            android:maxLength="12"
+            android:paddingHorizontal="20dp"
+            android:textColor="@color/ink"
+            android:textColorHint="@color/ink_subtle"
+            android:textSize="24sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:id="@+id/tv_pin_error"
@@ -61,16 +75,14 @@
         android:gravity="center"
         android:textColor="@color/danger"
         android:textSize="12sp"
-        android:visibility="invisible" />
+        android:visibility="gone" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_unlock"
+        style="@style/Widget.Hisn.Button"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/brand_bright"
-        android:text="@string/unlock"
-        android:textColor="@color/bg"
-        android:textSize="15sp"
-        app:cornerRadius="28dp" />
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="4dp"
+        android:text="@string/unlock" />
 </LinearLayout>

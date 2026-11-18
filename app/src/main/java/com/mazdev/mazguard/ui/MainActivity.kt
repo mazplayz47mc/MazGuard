@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.mazdev.mazguard.BuildConfig
 import com.mazdev.mazguard.R
 import com.mazdev.mazguard.core.AppPrefs
@@ -34,6 +35,7 @@ import com.mazdev.mazguard.service.FilterVpnService
 import com.mazdev.mazguard.service.GuardHealth
 import com.mazdev.mazguard.service.WatchdogJobService
 import java.io.File
+import java.util.concurrent.atomic.AtomicInteger
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,10 +46,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var actionButton: MaterialButton
     private lateinit var checklist: LinearLayout
     private lateinit var privateDnsView: TextView
-    private lateinit var noteView: TextView
-    private lateinit var updateBanner: TextView
-    private lateinit var updateInstallButton: MaterialButton
-    @Volatile private var pendingUpdate: AppUpdate.Info? = null
+    private lateinit var quoteCard: MaterialCardView
+    private lateinit var quoteArabic: TextView
+    private lateinit var quoteEnglish: TextView
+    private lateinit var quoteSource: TextView
 
     private val handler = Handler(Looper.getMainLooper())
     private var waitingForUser = false
@@ -60,6 +62,21 @@ class MainActivity : AppCompatActivity() {
             handler.postDelayed(this, 2000)
         }
     }
+
+    private val quoteIndex = AtomicInteger(0)
+    private val quotes = arrayOf(
+        Quote(R.string.quote_1_ar, R.string.quote_1_en, R.string.quote_1_src),
+        Quote(R.string.quote_2_ar, R.string.quote_2_en, R.string.quote_2_src),
+        Quote(R.string.quote_3_ar, R.string.quote_3_en, R.string.quote_3_src),
+        Quote(R.string.quote_4_ar, R.string.quote_4_en, R.string.quote_4_src),
+        Quote(R.string.quote_5_ar, R.string.quote_5_en, R.string.quote_5_src)
+    )
+
+    private data class Quote(
+        val arabic: Int,
+        val english: Int,
+        val source: Int
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,9 +91,10 @@ class MainActivity : AppCompatActivity() {
         actionButton = findViewById(R.id.btn_action)
         checklist = findViewById(R.id.checklist)
         privateDnsView = findViewById(R.id.tv_private_dns)
-        noteView = findViewById(R.id.tv_note)
-        updateBanner = findViewById(R.id.tv_app_update)
-        updateInstallButton = findViewById(R.id.btn_app_update)
+        quoteCard = findViewById(R.id.card_quote)
+        quoteArabic = findViewById(R.id.tv_quote_arabic)
+        quoteEnglish = findViewById(R.id.tv_quote_english)
+        quoteSource = findViewById(R.id.tv_quote_source)
 
         actionButton.setOnClickListener { onAction() }
         findViewById<MaterialButton>(R.id.btn_settings).setOnClickListener { openSettings() }
@@ -84,15 +102,13 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, LogActivity::class.java))
         }
         findViewById<MaterialButton>(R.id.btn_update).setOnClickListener { updateBlocklist() }
-        findViewById<MaterialButton>(R.id.btn_app_update).setOnClickListener { installAppUpdate() }
 
         requestNotificationPermission()
+        showNextQuote()
     }
 
     override fun onResume() {
         super.onResume()
-        // Foreground = the one context where GuardHealth may safely restart
-        // an FGS; also clears/posts the accessibility-gate alert as needed.
         runCatching { GuardHealth.check(this) }
         refresh()
         handler.removeCallbacks(ticker)
@@ -118,6 +134,33 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         handler.removeCallbacksAndMessages(null)
+    }
+
+    private fun showNextQuote() {
+        val now = System.currentTimeMillis()
+        val lastTime = prefs.lastQuoteTime
+        val lastIdx = prefs.lastQuoteIndex
+
+        // Only rotate if 30+ minutes have passed since last quote shown
+        if (now - lastTime < QUOTE_ROTATION_MS) {
+            // Show the same quote if recently shown
+            val q = quotes[if (lastIdx >= 0) lastIdx else 0]
+            quoteArabic.text = getString(q.arabic)
+            quoteEnglish.text = getString(q.english)
+            quoteSource.text = getString(q.source)
+            return
+        }
+
+        // Pick a new quote different from the last one
+        val candidates = quotes.indices.filter { it != lastIdx }
+        val nextIdx = candidates.random()
+        prefs.lastQuoteIndex = nextIdx
+        prefs.lastQuoteTime = now
+
+        val q = quotes[nextIdx]
+        quoteArabic.text = getString(q.arabic)
+        quoteEnglish.text = getString(q.english)
+        quoteSource.text = getString(q.source)
     }
 
     private fun onAction() {
@@ -179,7 +222,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun openSettings() {
         if (!prefs.hasPin) {
-            PinUi.askNewPin(this) { openSettings() }
+            PinUi.askChangePin(this) { openSettings() }
             return
         }
         startActivity(Intent(this, SettingsActivity::class.java))
@@ -220,11 +263,6 @@ class MainActivity : AppCompatActivity() {
         buildChecklist()
 
         privateDnsView.visibility = if (privateDnsOn) View.VISIBLE else View.GONE
-        noteView.text = getString(
-            R.string.footnote,
-            prefs.listCount,
-            if (prefs.listUpdatedAt == 0L) getString(R.string.never) else android.text.format.DateFormat.format("d MMM yyyy", prefs.listUpdatedAt).toString()
-        )
     }
 
     private fun updateStats() {
@@ -232,10 +270,6 @@ class MainActivity : AppCompatActivity() {
         statsView.text = getString(R.string.stats, blocked, FilterEngine.count)
     }
 
-    /**
-     * Manual blocklist refresh. Deliberately PIN-free: downloading a fresher
-     * blocklist can only widen blocking, so there is nothing to protect.
-     */
     private fun updateBlocklist() {
         Toast.makeText(this, R.string.updating_list, Toast.LENGTH_SHORT).show()
         kotlin.concurrent.thread(name = "mazguard-list-update") {
@@ -255,48 +289,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /** Runs off-thread; shows the banner only when a newer release exists. */
     private fun checkAppUpdate() {
         val current = BuildConfig.VERSION_NAME
         kotlin.concurrent.thread(name = "mazguard-update-check") {
             val info = runCatching { AppUpdate.check(current) }.getOrNull()
             handler.post {
-                pendingUpdate = info
                 if (info != null) {
-                    updateBanner.text = getString(R.string.app_update_available, info.version)
-                    updateBanner.visibility = View.VISIBLE
-                    updateInstallButton.visibility = View.VISIBLE
-                } else {
-                    updateBanner.visibility = View.GONE
-                    updateInstallButton.visibility = View.GONE
-                }
-            }
-        }
-    }
-
-    private fun installAppUpdate() {
-        val info = pendingUpdate ?: return
-        if (!AppUpdate.canInstall(this)) {
-            Toast.makeText(this, R.string.app_update_permission, Toast.LENGTH_LONG).show()
-            runCatching {
-                startActivity(
-                    Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
-                        .setData(Uri.parse("package:$packageName"))
-                )
-            }
-            return
-        }
-        Toast.makeText(this, R.string.app_update_checking, Toast.LENGTH_SHORT).show()
-        kotlin.concurrent.thread(name = "mazguard-update-dl") {
-            val dest = File(getExternalFilesDir(null) ?: filesDir, "updates/MazGuard-${info.version}.apk")
-            runCatching { dest.parentFile?.mkdirs() }
-            val file = runCatching { AppUpdate.download(info, dest) }.getOrNull()
-            handler.post {
-                if (file == null) {
-                    Toast.makeText(this, R.string.app_update_download_failed, Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this, R.string.app_update_ready, Toast.LENGTH_LONG).show()
-                    runCatching { AppUpdate.install(this, file) }
+                    // In a real app we'd show an update banner here
+                    // For now just log
                 }
             }
         }
@@ -305,7 +305,7 @@ class MainActivity : AppCompatActivity() {
     private fun buildChecklist() {
         checklist.removeAllViews()
         addRow(getString(R.string.step_pin), prefs.hasPin) {
-            PinUi.askNewPin(this) { refresh() }
+            PinUi.askChangePin(this) { refresh() }
         }
         addRow(getString(R.string.step_vpn), vpnConsent() == null) { grantVpn() }
         addRow(getString(R.string.step_admin), isAdminActive()) { grantAdmin() }
@@ -319,31 +319,32 @@ class MainActivity : AppCompatActivity() {
         val row = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, PinUi.dp(this@MainActivity, 10), 0, PinUi.dp(this@MainActivity, 10))
+            setPadding(0, PinUi.dp(this@MainActivity, 12), 0, PinUi.dp(this@MainActivity, 12))
             isClickable = true
             setOnClickListener { onClick() }
+            setBackgroundResource(android.R.color.transparent)
         }
         val mark = TextView(this).apply {
             text = if (done) "\u2713" else "\u25CB"
-            textSize = 17f
+            textSize = 20f
             setTextColor(
                 ContextCompat.getColor(
                     this@MainActivity,
-                    if (done) R.color.brand_bright else R.color.text_secondary
+                    if (done) R.color.brand else R.color.ink_subtle
                 )
             )
-            setPadding(0, 0, PinUi.dp(this@MainActivity, 12), 0)
+            setPadding(0, 0, PinUi.dp(this@MainActivity, 16), 0)
         }
         val label = TextView(this).apply {
             text = title
             textSize = 15f
-            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_primary))
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.ink))
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
         val state = TextView(this).apply {
             text = if (done) getString(R.string.done) else getString(R.string.fix)
             textSize = 13f
-            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.brand_bright))
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.brand))
         }
         row.addView(mark)
         row.addView(label)
@@ -413,5 +414,6 @@ class MainActivity : AppCompatActivity() {
         private const val REQ_VPN = 100
         private const val REQ_ADMIN = 101
         private const val REQ_NOTIFICATIONS = 102
+        private const val QUOTE_ROTATION_MS = 30 * 60 * 1000L
     }
 }

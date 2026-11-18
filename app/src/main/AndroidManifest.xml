@@ -18,7 +18,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MazGuard"
+        android:theme="@style/Theme.Hisn"
         android:usesCleartextTraffic="false">
 
         <activity
@@ -43,7 +43,7 @@
             android:exported="false"
             android:launchMode="singleTop"
             android:taskAffinity="com.mazdev.mazguard.gate"
-            android:theme="@style/Theme.MazGuard.Gate"
+            android:theme="@style/Theme.Hisn.Gate"
             android:windowSoftInputMode="adjustResize" />
 
         <activity

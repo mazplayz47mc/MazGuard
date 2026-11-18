@@ -4,13 +4,38 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group
-        android:scaleX="2.6"
-        android:scaleY="2.6"
-        android:translateX="22.8"
-        android:translateY="22.8">
-        <path
-            android:fillColor="#FF2FBF7F"
-            android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12L21,5L12,1zM10.5,16.5l-4,-4 1.41,-1.41 2.59,2.58 5.59,-5.58L17.5,9.5z" />
-    </group>
+    <!-- Background circle -->
+    <path
+        android:fillColor="#050F0B"
+        android:pathData="M54,0C24.3,0 0,24.3 0,54s24.3,54 54,54 54,-24.3 54,-54S83.7,0 54,0z" />
+    <!-- Subtle radial gradient overlay -->
+    <path
+        android:fillColor="#0D2B1F"
+        android:pathData="M54,54C37.4,54 24,67.4 24,84c0,16.6 13.4,30 30,30s30,-13.4 30,-30c0,-16.6 -13.4,-30 -30,-30z" />
+    <!-- Eight-pointed star (Rub el Hizb) - outer square -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M36,36 L72,36 L72,72 L36,72 Z"
+        android:strokeWidth="1.8"
+        android:strokeColor="#E8CC7A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- Eight-pointed star - inner rotated square -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M54,20 L88,54 L54,88 L20,54 Z"
+        android:strokeWidth="1.8"
+        android:strokeColor="#E8CC7A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <!-- Inner circle -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M54,28C42,28 32,38 32,50s10,22 22,22 22,-10 22,-22S66,28 54,28"
+        android:strokeWidth="1"
+        android:strokeColor="#E8CC7A" />
+    <!-- Center glow dot -->
+    <path
+        android:fillColor="#E8CC7A"
+        android:pathData="M54,52C53,52 52,51 52,50s1,-2 2,-2 2,1 2,2 -1,2 -2,2z" />
 </vector>

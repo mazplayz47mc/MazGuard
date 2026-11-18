@@ -5,11 +5,11 @@ import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import com.mazdev.mazguard.R
 import com.mazdev.mazguard.core.AppPrefs
 import com.mazdev.mazguard.core.PinManager
@@ -22,7 +22,7 @@ import com.mazdev.mazguard.core.PinManager
 class GateActivity : AppCompatActivity() {
 
     private lateinit var prefs: AppPrefs
-    private lateinit var pinField: EditText
+    private lateinit var pinField: TextInputEditText
     private lateinit var errorView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,8 +38,8 @@ class GateActivity : AppCompatActivity() {
         pinField = findViewById(R.id.et_pin)
         errorView = findViewById(R.id.tv_pin_error)
 
-        findViewById<Button>(R.id.btn_unlock).setOnClickListener { attempt() }
-        findViewById<Button>(R.id.btn_open_app).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btn_unlock).setOnClickListener { attempt() }
+        findViewById<MaterialButton>(R.id.btn_open_app).setOnClickListener {
             attempt(openApp = true)
         }
         pinField.setOnEditorActionListener { _, actionId, _ ->

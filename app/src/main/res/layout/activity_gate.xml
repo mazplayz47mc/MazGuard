@@ -3,57 +3,72 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg"
+    android:background="@color/gate_bg"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="28dp">
 
     <ImageView
-        android:layout_width="72dp"
-        android:layout_height="72dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:background="@drawable/bg_shield_circle"
         android:contentDescription="@string/gate_title"
-        android:padding="20dp"
+        android:padding="22dp"
         android:src="@drawable/ic_shield"
-        android:tint="@color/brand_bright" />
+        android:tint="@color/brand" />
 
     <TextView
         android:id="@+id/tv_gate_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="20dp"
         android:text="@string/gate_title"
-        android:textColor="@color/text_primary"
-        android:textSize="26sp"
-        android:textStyle="bold" />
+        android:textColor="@color/ink"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.02" />
 
     <TextView
         android:id="@+id/tv_gate_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         android:gravity="center"
         android:text="@string/gate_body"
-        android:textColor="@color/text_secondary"
-        android:textSize="14sp" />
+        android:textColor="@color/ink_muted"
+        android:textSize="14sp"
+        android:lineSpacingExtra="2dp" />
 
-    <EditText
-        android:id="@+id/et_pin"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_pin"
+        style="@style/Widget.Hisn.TextInputLayout"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/bg_pin"
-        android:gravity="center"
-        android:hint="@string/pin_hint"
-        android:imeOptions="actionDone"
-        android:inputType="numberPassword"
-        android:letterSpacing="0.3"
-        android:maxLength="12"
-        android:paddingStart="18dp"
-        android:paddingEnd="18dp"
-        android:textColor="@color/text_primary"
-        android:textColorHint="@color/text_secondary"
-        android:textSize="20sp" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:layout_marginHorizontal="4dp"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:hintEnabled="false"
+        app:errorEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_pin"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@android:color/transparent"
+            android:gravity="center"
+            android:hint="@string/pin_hint"
+            android:imeOptions="actionDone"
+            android:inputType="numberPassword"
+            android:letterSpacing="0.4"
+            android:maxLength="12"
+            android:paddingHorizontal="20dp"
+            android:textColor="@color/ink"
+            android:textColorHint="@color/ink_subtle"
+            android:textSize="24sp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
         android:id="@+id/tv_pin_error"
@@ -63,25 +78,22 @@
         android:gravity="center"
         android:textColor="@color/danger"
         android:textSize="12sp"
-        android:visibility="invisible" />
+        android:visibility="gone" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_unlock"
+        style="@style/Widget.Hisn.Button"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/brand_bright"
-        android:text="@string/unlock"
-        android:textColor="@color/bg"
-        android:textSize="15sp"
-        app:cornerRadius="28dp" />
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="4dp"
+        android:text="@string/unlock" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_open_app"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.Hisn.Button.Text"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginTop="6dp"
-        android:text="@string/open_app"
-        android:textColor="@color/ink_muted" />
+        android:layout_marginTop="8dp"
+        android:text="@string/open_app" />
 </LinearLayout>

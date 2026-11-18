@@ -95,6 +95,16 @@ class AppPrefs private constructor(private val sp: SharedPreferences) {
         get() = HashSet(sp.getStringSet(K_BLOCKED_KEYWORDS, emptySet()) ?: emptySet())
         set(value) = sp.edit().putStringSet(K_BLOCKED_KEYWORDS, value).apply()
 
+    /** Index of the last shown quote, so we don't repeat it too soon. */
+    var lastQuoteIndex: Int
+        get() = sp.getInt(K_LAST_QUOTE_INDEX, -1)
+        set(value) = sp.edit().putInt(K_LAST_QUOTE_INDEX, value).apply()
+
+    /** Timestamp when the last quote was shown (epoch ms). */
+    var lastQuoteTime: Long
+        get() = sp.getLong(K_LAST_QUOTE_TIME, 0L)
+        set(value) = sp.edit().putLong(K_LAST_QUOTE_TIME, value).apply()
+
     fun addAllowed(domain: String) {
         val set = allowedDomains
         set.add(domain.lowercase())
@@ -147,6 +157,8 @@ class AppPrefs private constructor(private val sp: SharedPreferences) {
         private const val K_BLOCKED_EXTRA = "blocked_domains"
         private const val K_BROWSER_GATE = "browser_gate"
         private const val K_BLOCKED_KEYWORDS = "blocked_keywords"
+        private const val K_LAST_QUOTE_INDEX = "last_quote_index"
+        private const val K_LAST_QUOTE_TIME = "last_quote_time"
 
         @Volatile
         private var instance: AppPrefs? = null

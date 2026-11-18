@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import com.mazdev.mazguard.R
 import com.mazdev.mazguard.core.BlockLog
@@ -42,13 +43,13 @@ class LogActivity : AppCompatActivity() {
             val host = TextView(this).apply {
                 text = entry.host
                 textSize = 14f
-                setTextColor(getColor(R.color.text_primary))
+                setTextColor(ContextCompat.getColor(this@LogActivity, R.color.ink))
                 layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             }
             val time = TextView(this).apply {
                 text = formatter.format(Date(entry.time))
                 textSize = 12f
-                setTextColor(getColor(R.color.text_secondary))
+                setTextColor(ContextCompat.getColor(this@LogActivity, R.color.ink_muted))
             }
             row.addView(host)
             row.addView(time)
