@@ -37,6 +37,7 @@ class GuardAccessibilityService : AccessibilityService() {
 
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         val e = event ?: return
+        android.util.Log.d("HisnGate", "onAccessibilityEvent: type=${e.eventType}, pkg=${e.packageName}, class=${e.className}")
         // Window-state for navigation; content-changed catches URL-bar edits in
         // browsers, which do not always raise a window-state event.
         val isContent = e.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED
@@ -53,11 +54,11 @@ class GuardAccessibilityService : AccessibilityService() {
         if (!isWatchedPackage(pkg)) return
 
         val now = SystemClock.elapsedRealtime()
-        if (now - lastEvaluateAt < 150) return
+        if (now - lastEvaluateAt < 50) return  // Tighter debounce: 50ms instead of 150ms
         lastEvaluateAt = now
 
-        // Content is usually not populated yet when the window-state event fires.
-        handler.postDelayed({ evaluate(pkg) }, 220)
+        // Fire immediately - no postDelayed. The screen signature collection is fast enough.
+        evaluate(pkg)
     }
 
     private fun isWatchedPackage(pkg: String): Boolean =
@@ -69,6 +70,7 @@ class GuardAccessibilityService : AccessibilityService() {
     private fun isBrowser(pkg: String): Boolean = BROWSERS.contains(pkg)
 
     private fun evaluate(pkg: String) {
+        android.util.Log.d("HisnGate", "evaluate: pkg=$pkg")
         // Never gate our own UI: the app dashboard legitimately lists words
         // like "device admin" in its checklist, and its settings are already
         // PIN-locked by their own lock screen.
@@ -82,15 +84,39 @@ class GuardAccessibilityService : AccessibilityService() {
             }
             return
         }
-        if (isProtectedScreen(pkg)) raiseGate(GateActivity.REASON_SETTINGS)
+        
+        // Aggressive gating: if Settings is open and our app is mentioned anywhere,
+        // gate immediately. This catches the app info screen before the user can click.
+        if (pkg == "com.android.settings") {
+            val sig = screenSignature()
+            android.util.Log.d("HisnGate", "Settings screen sig: $sig")
+            val mentionsUs = sig.contains(APP_LABEL, true) ||
+                sig.contains(APP_LABEL_LEGACY, true) ||
+                sig.contains(PACKAGE_NAME, true)
+            if (mentionsUs) {
+                android.util.Log.d("HisnGate", "Aggressive gate: mentionsUs=true, raising")
+                raiseGate(GateActivity.REASON_SETTINGS)
+                return
+            }
+        }
+        
+        if (isProtectedScreen(pkg)) {
+            android.util.Log.d("HisnGate", "isProtectedScreen returned true, raising gate")
+            raiseGate(GateActivity.REASON_SETTINGS)
+        } else {
+            android.util.Log.d("HisnGate", "isProtectedScreen returned false")
+        }
     }
 
     private fun isProtectedScreen(pkg: String): Boolean {
         val p = prefs
         val signature = screenSignature()
+        android.util.Log.d("HisnGate", "isProtectedScreen: signature=$signature")
 
         val mentionsUs = signature.contains(APP_LABEL, true) ||
+            signature.contains(APP_LABEL_LEGACY, true) ||
             signature.contains(PACKAGE_NAME, true)
+        android.util.Log.d("HisnGate", "mentionsUs=$mentionsUs")
 
         if (mentionsUs) {
             // App info / force stop / uninstall / clear data.
@@ -242,7 +268,9 @@ class GuardAccessibilityService : AccessibilityService() {
     override fun onInterrupt() = Unit
 
     companion object {
-        private const val APP_LABEL = "MazGuard"
+        // Both labels work so upgrades from older versions (MazGuard) are also gated.
+        private const val APP_LABEL = "Hisn"
+        private const val APP_LABEL_LEGACY = "MazGuard"
         private const val PACKAGE_NAME = "com.mazdev.mazguard"
 
         /**
