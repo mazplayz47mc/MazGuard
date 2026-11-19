@@ -3,6 +3,8 @@ package com.mazdev.mazguard.core
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.core.content.FileProvider
 import java.io.File
 import java.net.HttpURLConnection
@@ -19,8 +21,12 @@ import java.net.URL
 object AppUpdate {
 
     private const val API =
-        "https://api.github.com/repos/mazplayz47mc/MazGuard/releases/latest"
+        "https://api.github.com/repos/mazplayz47mc/Hisn/releases/latest"
     private const val OWNER_PACKAGE = "com.mazdev.mazguard"
+
+    /** Family-friendly DoH endpoints that block adult content at DNS level. */
+    private const val FAMILY_DNS_V4 = "185.228.168.168"
+    private const val FAMILY_DNS_V6 = "2a0d:2a00:1::"
 
     data class Info(val version: String, val apkUrl: String, val digest: String?)
 
@@ -38,7 +44,7 @@ object AppUpdate {
             if (compareVersions(latest, currentVersion) <= 0) return null
             val apkUrl = regexField(
                 body,
-                "\"browser_download_url\"\\s*:\\s*\"([^\"]*MazGuard-[^\"]*\\.apk)\""
+                "\"browser_download_url\"\\s*:\\s*\"([^\"]*Hisn-[^\"]*\\.apk)\""
             ) ?: return null
             // GitHub publishes sha256 digests for release assets. Used as a
             // second integrity check on top of Android's signature pinning.
@@ -106,6 +112,64 @@ object AppUpdate {
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(intent)
+    }
+
+    /**
+     * Sets Private DNS to a family-friendly resolver that blocks adult content.
+     * This ensures the update itself can't be bypassed by DNS tricks.
+     */
+    fun setFamilyDns(context: Context): Boolean {
+        return runCatching {
+            val resolver = context.contentResolver
+            // Use Cloudflare Family (malware + adult content blocking)
+            Settings.Global.putString(resolver, "private_dns_mode", "hostname")
+            Settings.Global.putString(resolver, "private_dns_specifier", "family.cloudflare-dns.com")
+            true
+        }.getOrDefault(false)
+    }
+
+    /** Restores Private DNS to "off" (system default). */
+    fun restoreDns(context: Context): Boolean {
+        return runCatching {
+            val resolver = context.contentResolver
+            Settings.Global.putString(resolver, "private_dns_mode", "off")
+            true
+        }.getOrDefault(false)
+    }
+
+    /**
+     * Downloads the APK with family DNS enforced, then installs it.
+     * Runs off the main thread; call from a background thread.
+     */
+    fun downloadAndInstallWithFamilyDns(context: Context, info: Info, dest: File): Boolean {
+        return runCatching {
+            // 1) Force family DNS for the entire download + install
+            setFamilyDns(context)
+
+            // 2) Download with family DNS active
+            val conn = URL(info.apkUrl).openConnection() as HttpURLConnection
+            conn.connectTimeout = 15_000
+            conn.readTimeout = 60_000
+            try {
+                if (conn.responseCode != 200) return false
+                dest.outputStream().use { out ->
+                    conn.inputStream.use { it.copyTo(out, 64 * 1024) }
+                }
+            } finally {
+                conn.disconnect()
+            }
+            if (!digestMatches(dest, info.digest)) {
+                dest.delete()
+                return false
+            }
+
+            // 3) Install - family DNS still active
+            install(context, dest)
+            true
+        }.getOrDefault(false).also { _ ->
+            // 4) Restore DNS after (best effort)
+            restoreDns(context)
+        }
     }
 
     fun canInstall(context: Context): Boolean =

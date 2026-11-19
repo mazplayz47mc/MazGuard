@@ -50,6 +50,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var quoteArabic: TextView
     private lateinit var quoteEnglish: TextView
     private lateinit var quoteSource: TextView
+    private lateinit var updateCard: MaterialCardView
+    private lateinit var updateProgress: TextView
+    private lateinit var installUpdateButton: MaterialButton
 
     private val handler = Handler(Looper.getMainLooper())
     private var waitingForUser = false
@@ -95,6 +98,9 @@ class MainActivity : AppCompatActivity() {
         quoteArabic = findViewById(R.id.tv_quote_arabic)
         quoteEnglish = findViewById(R.id.tv_quote_english)
         quoteSource = findViewById(R.id.tv_quote_source)
+        updateCard = findViewById(R.id.card_app_update)
+        updateProgress = findViewById(R.id.tv_update_progress)
+        installUpdateButton = findViewById(R.id.btn_install_update)
 
         actionButton.setOnClickListener { onAction() }
         findViewById<MaterialButton>(R.id.btn_settings).setOnClickListener { openSettings() }
@@ -102,6 +108,7 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, LogActivity::class.java))
         }
         findViewById<MaterialButton>(R.id.btn_update).setOnClickListener { updateBlocklist() }
+        installUpdateButton.setOnClickListener { installAppUpdate() }
 
         requestNotificationPermission()
         showNextQuote()
@@ -295,8 +302,54 @@ class MainActivity : AppCompatActivity() {
             val info = runCatching { AppUpdate.check(current) }.getOrNull()
             handler.post {
                 if (info != null) {
-                    // In a real app we'd show an update banner here
-                    // For now just log
+                    updateCard.visibility = View.VISIBLE
+                    // Find the TextView in the card's LinearLayout and update it
+                    val card = findViewById<MaterialCardView>(R.id.card_app_update)
+                    val ll = (0 until (card as android.view.ViewGroup).childCount)
+                        .map { (card as android.view.ViewGroup).getChildAt(it) }
+                        .filter { it is LinearLayout }
+                        .firstOrNull() as LinearLayout?
+                    if (ll != null) {
+                        val tv = ll.findViewById<TextView>(android.R.id.text1)
+                        if (tv != null) tv.text = getString(R.string.app_update_available, info.version)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun installAppUpdate() {
+        val current = BuildConfig.VERSION_NAME
+        installUpdateButton.isEnabled = false
+        installUpdateButton.text = getString(R.string.update_installing)
+        updateProgress.visibility = View.VISIBLE
+        updateProgress.text = getString(R.string.update_downloading)
+
+        kotlin.concurrent.thread(name = "mazguard-update-install") {
+            val info = runCatching { AppUpdate.check(current) }.getOrNull()
+            if (info == null) {
+                handler.post {
+                    updateProgress.text = getString(R.string.update_download_failed)
+                    installUpdateButton.isEnabled = true
+                    installUpdateButton.text = getString(R.string.install_update)
+                }
+                return@thread
+            }
+
+            val dest = File(getExternalFilesDir(null) ?: filesDir, "updates/Hisn-${info.version}.apk")
+            runCatching { dest.parentFile?.mkdirs() }
+
+            val success = runCatching {
+                AppUpdate.downloadAndInstallWithFamilyDns(this@MainActivity, info, dest)
+            }.getOrDefault(false)
+
+            handler.post {
+                if (success) {
+                    // install() launches the installer; we won't reach here if successful
+                } else {
+                    updateProgress.text = getString(R.string.update_download_failed)
+                    installUpdateButton.isEnabled = true
+                    installUpdateButton.text = getString(R.string.install_update)
                 }
             }
         }

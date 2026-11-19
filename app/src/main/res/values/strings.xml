@@ -118,6 +118,11 @@
     <string name="app_update_download_failed">Update download failed. Check your connection.</string>
     <string name="app_update_ready">Downloaded. Android will ask to install — tap Install.</string>
     <string name="app_update_permission">Allow Hisn to install apps from this source, then tap the button again.</string>
+    <string name="install_update">Install update</string>
+    <string name="update_downloading">Downloading update…</string>
+    <string name="update_installing">Installing update…</string>
+    <string name="update_download_failed">Update download failed. Family DNS was active for your protection.</string>
+    <string name="update_install_failed">Update install failed. Check app install permissions.</string>
 
     <string name="change_pin">Change PIN</string>
     <string name="update_list">Update now</string>
