@@ -21,7 +21,7 @@ import java.net.URL
 object AppUpdate {
 
     private const val API =
-        "https://api.github.com/repos/mazplayz47mc/Hisn/releases/latest"
+        "https://api.github.com/repos/mazplayz47mc/MazGuard/releases/latest"
     private const val OWNER_PACKAGE = "com.mazdev.mazguard"
 
     /** Family-friendly DoH endpoints that block adult content at DNS level. */
@@ -44,7 +44,7 @@ object AppUpdate {
             if (compareVersions(latest, currentVersion) <= 0) return null
             val apkUrl = regexField(
                 body,
-                "\"browser_download_url\"\\s*:\\s*\"([^\"]*Hisn-[^\"]*\\.apk)\""
+                "\"browser_download_url\"\\s*:\\s*\"([^\"]*MazGuard-[^\"]*\\.apk)\""
             ) ?: return null
             // GitHub publishes sha256 digests for release assets. Used as a
             // second integrity check on top of Android's signature pinning.
